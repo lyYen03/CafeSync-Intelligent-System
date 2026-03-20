@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - CaféSync</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --cosmic-latte: #FFF8E7;
+            --raw-umber: #826644;
+            --umber-dark: #5e482f;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--cosmic-latte);
+            color: var(--umber-dark);
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 100px;
+        }
+
+        /* Navbar cho trang con */
+        .navbar {
+            background-color: var(--raw-umber) !important;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--cosmic-latte);
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .back-btn {
+            color: var(--cosmic-latte);
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+
+        /* Card món hàng trong giỏ */
+        .cart-item {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(130, 102, 68, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .cart-img {
+            border-radius: 12px;
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .item-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--umber-dark);
+            margin-bottom: 0;
+        }
+
+        .item-price {
+            color: var(--raw-umber);
+            font-weight: 700;
+        }
+
+        /* Nút tăng giảm số lượng */
+        .qty-btn {
+            border: 1px solid #eaddcf;
+            background-color: var(--card-bg);
+            color: var(--umber-dark);
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .qty-input {
+            width: 40px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: var(--umber-dark);
+        }
+
+        /* Khu vực tổng tiền dưới đáy */
+        .checkout-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--card-bg);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .btn-checkout {
+            background-color: var(--raw-umber);
+            color: var(--cosmic-latte);
+            border-radius: 25px;
+            font-weight: 600;
+            padding: 12px;
+            width: 100%;
+            font-size: 1.1rem;
+            border: none;
+        }
+
+        .btn-checkout:hover {
+            background-color: var(--umber-dark);
+            color: var(--cosmic-latte);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar shadow-sm sticky-top p-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="index.html" class="back-btn"><i class="bi bi-arrow-left-short"></i></a>
+            <h1 class="page-title">Giỏ hàng của bạn</h1>
+            <div style="width: 30px;"></div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+
+        <div class="cart-item p-2">
+            <div class="d-flex align-items-center">
+                <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&q=80" class="cart-img me-3"
+                    alt="Trà Đào Cam Sả">
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h6 class="item-title">Trà Đào Cam Sả</h6>
+                        <i class="bi bi-x-circle-fill text-danger" style="cursor: pointer; opacity: 0.7;"></i>
+                    </div>
+                    <p class="text-muted small mb-2" style="font-size: 0.8rem;">Size L, Ít đá</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="item-price">35.000đ</span>
+                        <div class="d-flex align-items-center">
+                            <button class="btn qty-btn">-</button>
+                            <input type="text" class="qty-input" value="1" readonly>
+                            <button class="btn qty-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cart-item p-2">
+            <div class="d-flex align-items-center">
+                <img src="https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=200&q=80" class="cart-img me-3"
+                    alt="Cà Phê Muối">
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h6 class="item-title">Cà Phê Muối</h6>
+                        <i class="bi bi-x-circle-fill text-danger" style="cursor: pointer; opacity: 0.7;"></i>
+                    </div>
+                    <p class="text-muted small mb-2" style="font-size: 0.8rem;">Đá riêng</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="item-price">29.000đ</span>
+                        <div class="d-flex align-items-center">
+                            <button class="btn qty-btn">-</button>
+                            <input type="text" class="qty-input" value="2" readonly>
+                            <button class="btn qty-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="checkout-bar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span style="font-weight: 500;">Tổng cộng (3 món):</span>
+                <span class="item-price" style="font-size: 1.3rem;">93.000đ</span>
+            </div>
+            <button class="btn btn-checkout">
+                Thanh toán ngay <i class="bi bi-arrow-right-circle ms-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. Hàm tính toán tổng tiền
+        function calculateTotal() {
+            let totalMoney = 0;
+            let totalItems = 0;
+            const cartItems = document.querySelectorAll('.cart-item');
+
+            cartItems.forEach(item => {
+                // Lấy số lượng hiện tại
+                const quantity = parseInt(item.querySelector('.qty-input').value);
+
+                // Lấy giá tiền (Chuyển chuỗi "35.000đ" thành số 35000 để tính toán)
+                const priceText = item.querySelector('.item-price').innerText;
+                const price = parseInt(priceText.replace(/\./g, '').replace('đ', ''));
+
+                totalMoney += quantity * price;
+                totalItems += quantity;
+            });
+
+            // Cập nhật số tiền và số lượng ra thanh Thanh toán dưới đáy
+            document.querySelector('.checkout-bar .item-price').innerText = totalMoney.toLocaleString('vi-VN') + 'đ';
+            document.querySelector('.checkout-bar span:first-child').innerText = `Tổng cộng (${totalItems} món):`;
+        }
+
+        // 2. Kích hoạt nút bấm cho từng món hàng
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const minusBtn = item.querySelectorAll('.qty-btn')[0]; // Nút Trừ
+            const plusBtn = item.querySelectorAll('.qty-btn')[1];  // Nút Cộng
+            const qtyInput = item.querySelector('.qty-input');     // Ô nhập số lượng
+            const removeBtn = item.querySelector('.bi-x-circle-fill'); // Nút Xóa đỏ
+
+            // Xử lý khi bấm nút Cộng
+            plusBtn.addEventListener('click', () => {
+                qtyInput.value = parseInt(qtyInput.value) + 1;
+                calculateTotal(); // Gọi hàm tính lại tiền
+            });
+
+            // Xử lý khi bấm nút Trừ
+            minusBtn.addEventListener('click', () => {
+                if (parseInt(qtyInput.value) > 1) { // Phải lớn hơn 1 mới cho trừ
+                    qtyInput.value = parseInt(qtyInput.value) - 1;
+                    calculateTotal(); // Gọi hàm tính lại tiền
+                }
+            });
+
+            // Xử lý khi bấm nút Xóa
+            removeBtn.addEventListener('click', () => {
+                item.remove(); // Xóa nguyên khối HTML của món đó
+                calculateTotal(); // Tính lại tiền
+            });
+        });
+
+        // 3. Chạy tính tiền lần đầu tiên khi trang vừa load xong
+        calculateTotal();
+    </script>
+</body>
+
+</html>
