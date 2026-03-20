@@ -1,33 +1,31 @@
 # ☕ CaféSync - Intelligent System
-Hệ thống đặt món thông minh và quản lý quán cà phê tích hợp Trợ lý ảo AI.
+**Đề tài:** Hệ thống quản lý quán cà phê tối ưu vận hành và cá nhân hóa trải nghiệm khách hàng.
 
 ## 📖 Giới thiệu dự án
-**CaféSync** là đồ án được phát triển với mục tiêu tối ưu hóa trải nghiệm gọi món của khách hàng thông qua giao diện Web App di động, đồng thời cung cấp hệ thống quản lý tập trung, hiện đại cho chủ quán. Điểm nhấn của hệ thống là việc tích hợp Trợ lý ảo AI giúp tư vấn đồ uống cá nhân hóa dựa trên tâm trạng và sở thích của khách hàng.
+Dự án **CaféSync** được xây dựng nhằm hiện đại hóa mô hình F&B truyền thống, tập trung vào việc tối ưu hóa quy trình vận hành cho chủ quán và tạo ra trải nghiệm gọi món mang tính cá nhân hóa cao cho khách hàng thông qua trí tuệ nhân tạo.
 
-Giao diện được thiết kế theo phong cách Minimalism chuyên nghiệp, sử dụng tone màu Earth-toned (Raw Umber & Cosmic Latte) mang lại cảm giác sang trọng và tập trung vào trải nghiệm người dùng (UX/UI).
+## 🚀 Công nghệ & Kỹ thuật trọng tâm
+Dự án ứng dụng các công nghệ tiên tiến để giải quyết bài toán thực tế:
+* **Prompt Engineering:** Kỹ thuật thiết kế câu lệnh tối ưu để xây dựng Trợ lý ảo AI tư vấn đồ uống chuyên sâu, am hiểu tâm lý và thực đơn của quán.
+* **Recommendation System:** Thuật toán gợi ý sản phẩm thông minh dựa trên hành vi và sở thích cá nhân của khách hàng.
+* **Real-time Communication (Socket.io):** Đảm bảo luồng dữ liệu giữa Khách hàng và Admin được cập nhật tức thời (đơn hàng mới, trạng thái món ăn) mà không cần tải lại trang.
+* **NoSQL (MongoDB):** Quản lý cơ sở dữ liệu linh hoạt, hỗ trợ truy xuất nhanh và mở rộng cấu trúc sản phẩm dễ dàng.
+* **Frontend & UI/UX:** HTML5, CSS3, JavaScript (ES6+), Bootstrap 5 (Mobile-first design).
 
-## 🚀 Công nghệ sử dụng
-* **Kiến trúc hệ thống:** Mô hình MVC (Model - View - Controller), phân tách rõ ràng Client - Server.
-* **Frontend (Khách hàng & Admin):** HTML5, CSS3, JavaScript, Bootstrap 5 (Mobile-first design).
-* **Backend:** Node.js, Express.js.
-* **Database:** MongoDB.
-* **Trí tuệ nhân tạo (AI):** Tích hợp Chatbot AI tư vấn.
-
-## 📂 Cấu trúc thư mục chuẩn
-Dự án được quy hoạch thành 3 phân hệ độc lập để tối ưu hóa quá trình làm việc nhóm:
-* `📁 App_KhachHang/`: Chứa mã nguồn giao diện Web App cho khách hàng (Quét QR, xem Menu, Đặt món, Chat AI).
-* `📁 Web_Admin/`: Chứa mã nguồn giao diện Dashboard quản lý cho nhân viên và chủ quán.
-* `📁 Backend_API/`: Khối máy chủ xử lý logic nghiệp vụ và tương tác với Cơ sở dữ liệu.
+## 📂 Phân hệ hệ thống
+* `📁 App_KhachHang/`: Web App di động tích hợp AI Chatbot và hệ thống đặt món.
+* `📁 Web_Admin/`: Dashboard quản lý vận hành, đơn hàng và thống kê real-time.
+* `📁 Backend_API/`: Node.js & Express server xử lý logic và CSDL NoSQL.
 
 ## 👥 Đội ngũ phát triển
 Dự án được thực hiện bởi nhóm sinh viên chuyên ngành **Hệ thống Thông tin - Đại học Công nghiệp TP.HCM (IUH)**:
 
-1. **Lý Thị Yến** (MSSV: 22665891)
+1. **Lý Thị Yến** 
    * *Vai trò:* Frontend Developer & UI/UX Designer.
    * *Phụ trách:* Phát triển trải nghiệm người dùng trên phân hệ `App_KhachHang`.
-2. **Tài** (MSSV: Đang cập nhật...)
+2. **Tài** 
    * *Vai trò:* Backend Developer & Admin Frontend.
    * *Phụ trách:* Xây dựng API, quản trị CSDL và phát triển phân hệ `Web_Admin`.
 
 ---
-*Dự án đang trong quá trình phát triển (Work In Progress).*
+*© 2026 CaféSync Project - Industrial University of Ho Chi Minh City.*
