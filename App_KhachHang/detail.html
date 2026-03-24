@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết món - CaféSync</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --cosmic-latte: #FFF8E7;
+            --raw-umber: #826644;
+            --umber-dark: #5e482f;
+        }
+
+        body {
+            background-color: var(--cosmic-latte);
+            font-family: 'Inter', sans-serif;
+            color: var(--umber-dark);
+            padding-bottom: 100px;
+        }
+
+        /* Header ảnh tràn viền */
+        .header-image {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--raw-umber);
+            text-decoration: none;
+            z-index: 10;
+        }
+
+        /* Nội dung chi tiết */
+        .detail-container {
+            background: white;
+            border-radius: 30px 30px 0 0;
+            margin-top: -30px;
+            position: relative;
+            padding: 30px 20px;
+            min-height: 500px;
+        }
+
+        .item-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .item-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--raw-umber);
+        }
+
+        /* Section chọn Option */
+        .option-title {
+            font-weight: 700;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-title i {
+            margin-right: 8px;
+            color: var(--raw-umber);
+        }
+
+        .btn-check:checked+.btn-outline-umber {
+            background-color: var(--raw-umber);
+            color: white;
+            border-color: var(--raw-umber);
+        }
+
+        .btn-outline-umber {
+            border: 1px solid var(--raw-umber);
+            color: var(--raw-umber);
+            border-radius: 12px;
+            padding: 8px 15px;
+            font-weight: 500;
+        }
+
+        /* Thanh đặt hàng dưới đáy */
+        .footer-action {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .btn-add-main {
+            background-color: var(--raw-umber);
+            color: white;
+            border-radius: 15px;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex justify-content-between align-items-center p-3 w-100 position-absolute" style="z-index: 10;">
+        <a href="index.html" class="back-btn shadow-sm" style="position: static;">
+            <i class="bi bi-chevron-left fs-5"></i>
+        </a>
+
+        <a href="cart.html"
+            class="bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center text-dark position-relative"
+            style="width: 40px; height: 40px; text-decoration: none;">
+            <i class="bi bi-cart3 fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size: 0.6rem;">3</span>
+        </a>
+    </div>
+    <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80" class="header-image" alt="Sản phẩm">
+
+    <div class="detail-container shadow-lg">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="item-name">Trà Đào Cam Sả</h1>
+            <span class="item-price">35.000đ</span>
+        </div>
+        <p class="text-muted mt-2">Sự hòa quyện giữa vị trà đào thanh mát, cam vàng mọng nước và hương sả đặc trưng. Một
+            lựa chọn tuyệt vời cho ngày hè năng động.</p>
+
+        <hr class="my-4" style="opacity: 0.1;">
+
+        <div class="option-title"><i class="bi bi-rulers"></i> Chọn Size</div>
+        <div class="d-flex gap-2">
+            <input type="radio" class="btn-check" name="size" id="sizeS" checked>
+            <label class="btn btn-outline-umber flex-fill" for="sizeS">Nhỏ (S)</label>
+
+            <input type="radio" class="btn-check" name="size" id="sizeM">
+            <label class="btn btn-outline-umber flex-fill" for="sizeM">Vừa (M) +5k</label>
+
+            <input type="radio" class="btn-check" name="size" id="sizeL">
+            <label class="btn btn-outline-umber flex-fill" for="sizeL">Lớn (L) +10k</label>
+        </div>
+
+        <div class="option-title"><i class="bi bi-moisture"></i> Mức độ đường</div>
+        <div class="d-flex gap-2 overflow-auto pb-2">
+            <input type="radio" class="btn-check" name="sugar" id="sugar0">
+            <label class="btn btn-outline-umber" for="sugar0">Không đường</label>
+
+            <input type="radio" class="btn-check" name="sugar" id="sugar50">
+            <label class="btn btn-outline-umber" for="sugar50">50% đường</label>
+
+            <input type="radio" class="btn-check" name="sugar" id="sugar100" checked>
+            <label class="btn btn-outline-umber" for="sugar100">100% đường</label>
+        </div>
+        <div class="option-title"><i class="bi bi-snow"></i> Mức độ đá</div>
+        <div class="d-flex gap-2 overflow-auto pb-2">
+            <input type="radio" class="btn-check" name="ice" id="ice0">
+            <label class="btn btn-outline-umber" for="ice0">Không đá</label>
+
+            <input type="radio" class="btn-check" name="ice" id="ice50">
+            <label class="btn btn-outline-umber" for="ice50">50% đá</label>
+
+            <input type="radio" class="btn-check" name="ice" id="ice100" checked>
+            <label class="btn btn-outline-umber" for="ice100">100% đá</label>
+        </div>
+        <div class="option-title"><i class="bi bi-pencil-square"></i> Ghi chú cho quán</div>
+        <textarea class="form-control shadow-sm border-0" rows="2"
+            placeholder="Ví dụ: Ít trà nhiều sữa, lấy thêm muỗng..."
+            style="border-radius: 12px; background-color: #fdfbf7; font-size: 0.9rem; padding: 12px;"></textarea>
+
+        <div class="alert mt-4 border-0" style="background-color: #fdfbf7; border-radius: 15px;">
+            <small class="text-muted d-block mb-1"><i class="bi bi-stars"></i> AI Gợi ý cho Yến:</small>
+            <span style="font-size: 0.9rem; font-style: italic;">"Món này sẽ ngon hơn nếu bạn chọn **50% đá** để giữ
+                được vị thơm của sả lâu hơn đó!"</span>
+        </div>
+    </div>
+
+    <div class="footer-action">
+        <div class="d-flex align-items-center mb-3">
+            <div class="d-flex align-items-center bg-light rounded-pill px-3 py-1">
+                <i class="bi bi-dash-circle fs-4" style="cursor: pointer;"></i>
+                <span class="mx-3 fw-bold">1</span>
+                <i class="bi bi-plus-circle fs-4" style="cursor: pointer; color: var(--raw-umber);"></i>
+            </div>
+            <div class="ms-auto fw-bold fs-5 text-dark">35.000đ</div>
+        </div>
+        <button class="btn btn-add-main shadow">Thêm vào giỏ hàng</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. Khai báo các biến
+        const basePrice = 35000;
+        const priceDisplay = document.querySelector('.item-price');
+        const footerPriceDisplay = document.querySelector('.footer-action .fw-bold.fs-5');
+        const sizeOptions = document.querySelectorAll('input[name="size"]');
+        const qtyDisplay = document.querySelector('.footer-action span.mx-3');
+        const plusBtn = document.querySelector('.bi-plus-circle');
+        const minusBtn = document.querySelector('.bi-dash-circle');
+
+        // Biến cho nút Thêm và Badge giỏ hàng
+        const btnAddMain = document.querySelector('.btn-add-main');
+        const cartBadge = document.querySelector('.badge');
+
+        let currentQty = 1;
+        let extraPrice = 0;
+
+        // 2. Hàm cập nhật giá tiền
+        function updateTotalPrice() {
+            if (document.getElementById('sizeS').checked) extraPrice = 0;
+            if (document.getElementById('sizeM').checked) extraPrice = 5000;
+            if (document.getElementById('sizeL').checked) extraPrice = 10000;
+
+            const finalPrice = (basePrice + extraPrice) * currentQty;
+            const formattedPrice = finalPrice.toLocaleString('vi-VN') + 'đ';
+            priceDisplay.innerText = formattedPrice;
+            footerPriceDisplay.innerText = formattedPrice;
+        }
+
+        // 3. Sự kiện đổi Size và Tăng/Giảm
+        sizeOptions.forEach(radio => radio.addEventListener('change', updateTotalPrice));
+        plusBtn.addEventListener('click', () => { currentQty++; qtyDisplay.innerText = currentQty; updateTotalPrice(); });
+        minusBtn.addEventListener('click', () => { if (currentQty > 1) { currentQty--; qtyDisplay.innerText = currentQty; updateTotalPrice(); } });
+
+        // 4. MA THUẬT: Xử lý nhấn nút "Thêm vào giỏ hàng"
+        btnAddMain.addEventListener('click', function () {
+            // Hiệu ứng đổi màu nút để báo đã nhấn
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-check-lg"></i> Đã thêm vào giỏ!';
+            this.style.backgroundColor = '#28a745'; // Đổi sang màu xanh lá thành công
+
+            // Cập nhật số lượng trên Badge giỏ hàng (giả lập tăng thêm)
+            let currentCartNum = parseInt(cartBadge.innerText);
+            cartBadge.innerText = currentCartNum + currentQty;
+
+            // Sau 1.5 giây thì trả lại nút như cũ
+            setTimeout(() => {
+                this.innerHTML = originalContent;
+                this.style.backgroundColor = '';
+            }, 1500);
+        });
+
+        updateTotalPrice();
+    </script>
+</body>
+
+</html>
