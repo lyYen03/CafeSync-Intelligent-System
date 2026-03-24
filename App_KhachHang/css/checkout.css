@@ -1,0 +1,62 @@
+/* public/css/checkout.css */
+:root {
+    --cosmic-latte: #FFF8E7;
+    --raw-umber: #826644;
+    --umber-dark: #5e482f;
+}
+
+body {
+    background-color: var(--cosmic-latte);
+    font-family: 'Inter', sans-serif;
+    color: var(--umber-dark);
+    padding: 20px;
+}
+
+.checkout-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(130, 102, 68, 0.05);
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    margin-right: 10px;
+    color: var(--raw-umber);
+}
+
+.payment-option {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.payment-option.active {
+    border-color: var(--raw-umber);
+    background-color: #fdfbf7;
+}
+
+.btn-confirm {
+    background-color: var(--raw-umber);
+    color: white;
+    border-radius: 15px;
+    padding: 15px;
+    width: 100%;
+    border: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-top: 10px;
+}

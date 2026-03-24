@@ -5,75 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh toán - CaféSync</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
         rel="stylesheet">
 
-    <style>
-        :root {
-            --cosmic-latte: #FFF8E7;
-            --raw-umber: #826644;
-            --umber-dark: #5e482f;
-        }
-
-        body {
-            background-color: var(--cosmic-latte);
-            font-family: 'Inter', sans-serif;
-            color: var(--umber-dark);
-            padding: 20px;
-        }
-
-        .checkout-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(130, 102, 68, 0.05);
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .section-title i {
-            margin-right: 10px;
-            color: var(--raw-umber);
-        }
-
-        .payment-option {
-            border: 1px solid #eee;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .payment-option.active {
-            border-color: var(--raw-umber);
-            background-color: #fdfbf7;
-        }
-
-        .btn-confirm {
-            background-color: var(--raw-umber);
-            color: white;
-            border-radius: 15px;
-            padding: 15px;
-            width: 100%;
-            border: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-top: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/checkout.css">
 </head>
 
 <body>
@@ -113,144 +52,20 @@
     <div class="checkout-card">
         <div class="section-title"><i class="bi bi-receipt"></i> Tóm tắt đơn hàng</div>
 
-        <div class="mb-3">
-            <div class="d-flex justify-content-between fw-bold">
-                <span>Trà Đào Cam Sả x1</span>
-                <span>45.000đ</span>
-            </div>
-            <div class="ps-3 border-start ms-2 mt-1"
-                style="border-width: 2px !important; border-color: var(--raw-umber) !important;">
-                <small class="text-muted d-block">- Size: L (+10k)</small>
-                <small class="text-muted d-block">- Lựa chọn: 50% Đường, 70% Đá</small>
-                <small class="text-info d-block" style="font-size: 0.8rem;">
-                    <i class="bi bi-chat-left-text me-1"></i> Ghi chú: "Lấy cho mình 2 cái muỗng ạ"
-                </small>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <div class="d-flex justify-content-between fw-bold">
-                <span>Cà Phê Muối x2</span>
-                <span>58.000đ</span>
-            </div>
-            <div class="ps-3 border-start ms-2 mt-1"
-                style="border-width: 2px !important; border-color: var(--raw-umber) !important;">
-                <small class="text-muted d-block">- Size: M (Mặc định)</small>
-                <small class="text-muted d-block">- Lựa chọn: Đá riêng</small>
-            </div>
+        <div id="order-summary-list">
         </div>
 
         <hr style="opacity: 0.1;">
         <div class="d-flex justify-content-between fw-bold fs-5">
             <span>Tổng thanh toán</span>
-            <span style="color: var(--raw-umber);">103.000đ</span>
-        </div>
-    </div>
-
-    <div class="checkout-card">
-        <div class="section-title"><i class="bi bi-credit-card"></i> Phương thức thanh toán</div>
-        <div class="payment-option active d-flex align-items-center">
-            <i class="bi bi-cash-stack fs-4 me-3"></i>
-            <div>
-                <div class="fw-bold">Tiền mặt</div>
-                <small class="text-muted">Thanh toán tại quầy</small>
-            </div>
-            <i class="bi bi-check-circle-fill ms-auto text-success"></i>
-        </div>
-        <div class="payment-option d-flex align-items-center opacity-50">
-            <i class="bi bi-qr-code-scan fs-4 me-3"></i>
-            <div>
-                <div class="fw-bold">Chuyển khoản (Momo/VNPAY)</div>
-                <small class="text-muted">Đang bảo trì...</small>
-            </div>
+            <span id="final-total" style="color: var(--raw-umber);">0đ</span>
         </div>
     </div>
 
     <button class="btn-confirm shadow-lg" onclick="placeOrder()">ĐẶT HÀNG NGAY</button>
-    <script>
-        // Giả lập dữ liệu bàn trống
-        const tables = [
-            { id: '02', status: 'empty' },
-            { id: '03', status: 'empty' },
-            { id: '05', status: 'empty' },
-            { id: '08', status: 'empty' }
-        ];
 
-        const tableSelect = document.getElementById('table-number');
-        const deliveryType = document.getElementById('delivery-type');
-        const tableArea = document.getElementById('table-selection');
-        const tableError = document.getElementById('table-error');
-
-        // Các thẻ mới cho QR
-        const qrInfo = document.getElementById('qr-info');
-        const manualInfo = document.getElementById('manual-info');
-        const displayTable = document.getElementById('display-table');
-
-        // Hàm khởi tạo trang thanh toán
-        function initCheckout() {
-            // Kiểm tra số bàn đã lưu từ index.html (do quét QR)
-            const savedTable = localStorage.getItem('selectedTable');
-
-            if (savedTable) {
-                // Nếu có QR: Hiện thông báo, giấu ô chọn thủ công
-                qrInfo.classList.remove('d-none');
-                manualInfo.classList.add('d-none');
-                displayTable.innerText = savedTable;
-            } else {
-                // Nếu không có QR: Hiện ô chọn bàn như bình thường
-                loadAvailableTables();
-            }
-        }
-
-        function loadAvailableTables() {
-            tables.forEach(table => {
-                const option = document.createElement('option');
-                option.value = table.id;
-                option.textContent = `Bàn số ${table.id} (Trống)`;
-                tableSelect.appendChild(option);
-            });
-        }
-
-        deliveryType.addEventListener('change', function () {
-            if (this.value === 'takeaway') {
-                tableArea.classList.add('d-none');
-            } else {
-                tableArea.classList.remove('d-none');
-            }
-        });
-
-        function placeOrder() {
-            const savedTable = localStorage.getItem('selectedTable');
-            const isAtTable = deliveryType.value === 'table';
-            const selectedTable = tableSelect.value;
-
-            let finalLocation = "";
-
-            if (savedTable) {
-                finalLocation = "Bàn " + savedTable;
-            } else {
-                if (isAtTable) {
-                    if (!selectedTable) {
-                        tableError.classList.remove('d-none');
-                        return;
-                    }
-                    finalLocation = "Bàn " + selectedTable;
-                } else {
-                    finalLocation = "Mang đi";
-                }
-            }
-
-            alert(`🎉 Đặt hàng thành công!\n\nSố đơn: #CFS${Math.floor(Math.random() * 1000)}\nVị trí: ${finalLocation}`);
-
-            // Xóa bộ nhớ bàn sau khi đặt đơn thành công (để khách sau không bị nhầm)
-            // localStorage.removeItem('selectedTable'); 
-
-            window.location.href = 'index.html';
-        }
-
-        // Chạy kiểm tra khi load trang
-        initCheckout();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/checkout.js"></script>
 </body>
 
 </html>
