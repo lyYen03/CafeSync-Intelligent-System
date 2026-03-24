@@ -380,6 +380,15 @@
             chatWindow.style.display = 'none';
             chatBtn.innerHTML = '<i class="bi bi-robot fs-3"></i>';
         });
+        // Kiểm tra xem trên đường dẫn có số bàn không (Ví dụ: ?table=05)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableNo = urlParams.get('table');
+
+        if (tableNo) {
+            // Nếu có, lưu ngay vào bộ nhớ máy khách hàng
+            localStorage.setItem('selectedTable', tableNo);
+            console.log("Đã xác nhận khách ngồi bàn: " + tableNo);
+        }
 
     </script>
 </body>

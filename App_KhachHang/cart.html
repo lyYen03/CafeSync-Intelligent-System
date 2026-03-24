@@ -144,28 +144,28 @@
 
     <div class="container mt-4">
 
-        <div class="cart-item p-2">
-            <div class="d-flex align-items-center">
-                <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&q=80" class="cart-img me-3"
-                    alt="Trà Đào Cam Sả">
-                <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <h6 class="item-title">Trà Đào Cam Sả</h6>
-                        <i class="bi bi-x-circle-fill text-danger" style="cursor: pointer; opacity: 0.7;"></i>
-                    </div>
-                    <p class="text-muted small mb-2" style="font-size: 0.8rem;">Size L, Ít đá</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="item-price">35.000đ</span>
-                        <div class="d-flex align-items-center">
-                            <button class="btn qty-btn">-</button>
-                            <input type="text" class="qty-input" value="1" readonly>
-                            <button class="btn qty-btn">+</button>
-                        </div>
-                    </div>
+        <div class="checkout-card">
+            <div class="section-title"><i class="bi bi-geo-alt"></i> Hình thức nhận hàng</div>
+
+            <div id="qr-table-info" class="alert alert-success d-none border-0"
+                style="background-color: #f0f9f4; border-radius: 12px;">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                Đã xác nhận: **Bàn số <span id="display-table-no">--</span>**
+            </div>
+
+            <div id="manual-selection">
+                <select id="delivery-type" class="form-select border-0 bg-light rounded-3 mb-3 p-3 fw-bold">
+                    <option value="table">Dùng tại bàn (Tại quán)</option>
+                    <option value="takeaway">Mang đi (Takeaway)</option>
+                </select>
+
+                <div id="table-selection">
+                    <select id="table-number" class="form-select border-0 bg-light rounded-3 p-3 fw-bold">
+                        <option value="">-- Chọn số bàn trống --</option>
+                    </select>
                 </div>
             </div>
         </div>
-
         <div class="cart-item p-2">
             <div class="d-flex align-items-center">
                 <img src="https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=200&q=80" class="cart-img me-3"
@@ -196,67 +196,79 @@
                 <span style="font-weight: 500;">Tổng cộng (3 món):</span>
                 <span class="item-price" style="font-size: 1.3rem;">93.000đ</span>
             </div>
-            <button class="btn btn-checkout">
+            <a href="checkout.html"
+                class="btn btn-checkout d-flex align-items-center justify-content-center text-decoration-none">
                 Thanh toán ngay <i class="bi bi-arrow-right-circle ms-2"></i>
-            </button>
+            </a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 1. Hàm tính toán tổng tiền
-        function calculateTotal() {
-            let totalMoney = 0;
-            let totalItems = 0;
-            const cartItems = document.querySelectorAll('.cart-item');
+        // Dữ liệu giả lập bàn trống
+        const tables = [
+            { id: '02', status: 'empty' },
+            { id: '03', status: 'empty' },
+            { id: '05', status: 'empty' }
+        ];
 
-            cartItems.forEach(item => {
-                // Lấy số lượng hiện tại
-                const quantity = parseInt(item.querySelector('.qty-input').value);
+        const qrInfo = document.getElementById('qr-table-info');
+        const manualSection = document.getElementById('manual-selection');
+        const displayTable = document.getElementById('display-table-no');
+        const tableSelect = document.getElementById('table-number');
 
-                // Lấy giá tiền (Chuyển chuỗi "35.000đ" thành số 35000 để tính toán)
-                const priceText = item.querySelector('.item-price').innerText;
-                const price = parseInt(priceText.replace(/\./g, '').replace('đ', ''));
+        function initCheckout() {
+            // Lấy số bàn từ QR đã lưu ở index.html
+            const savedTable = localStorage.getItem('selectedTable');
 
-                totalMoney += quantity * price;
-                totalItems += quantity;
-            });
+            if (savedTable) {
+                // TRƯỜNG HỢP 1: Có QR -> Hiện thông báo, giấu ô chọn
+                qrInfo.classList.remove('d-none');
+                manualSection.classList.add('d-none');
+                displayTable.innerText = savedTable;
+            } else {
+                // TRƯỜNG HỢP 2: Không có QR -> Hiện ô chọn thủ công
+                qrInfo.classList.add('d-none');
+                manualSection.classList.remove('d-none');
 
-            // Cập nhật số tiền và số lượng ra thanh Thanh toán dưới đáy
-            document.querySelector('.checkout-bar .item-price').innerText = totalMoney.toLocaleString('vi-VN') + 'đ';
-            document.querySelector('.checkout-bar span:first-child').innerText = `Tổng cộng (${totalItems} món):`;
+                // Đổ dữ liệu bàn trống vào select
+                tables.forEach(table => {
+                    const option = document.createElement('option');
+                    option.value = table.id;
+                    option.textContent = `Bàn số ${table.id}`;
+                    tableSelect.appendChild(option);
+                });
+            }
         }
 
-        // 2. Kích hoạt nút bấm cho từng món hàng
-        document.querySelectorAll('.cart-item').forEach(item => {
-            const minusBtn = item.querySelectorAll('.qty-btn')[0]; // Nút Trừ
-            const plusBtn = item.querySelectorAll('.qty-btn')[1];  // Nút Cộng
-            const qtyInput = item.querySelector('.qty-input');     // Ô nhập số lượng
-            const removeBtn = item.querySelector('.bi-x-circle-fill'); // Nút Xóa đỏ
+        function placeOrder() {
+            const savedTable = localStorage.getItem('selectedTable');
+            const selectedTable = tableSelect.value;
+            const deliveryType = document.getElementById('delivery-type').value;
 
-            // Xử lý khi bấm nút Cộng
-            plusBtn.addEventListener('click', () => {
-                qtyInput.value = parseInt(qtyInput.value) + 1;
-                calculateTotal(); // Gọi hàm tính lại tiền
-            });
+            let finalTable = "";
 
-            // Xử lý khi bấm nút Trừ
-            minusBtn.addEventListener('click', () => {
-                if (parseInt(qtyInput.value) > 1) { // Phải lớn hơn 1 mới cho trừ
-                    qtyInput.value = parseInt(qtyInput.value) - 1;
-                    calculateTotal(); // Gọi hàm tính lại tiền
+            if (savedTable) {
+                finalTable = "Bàn " + savedTable;
+            } else if (deliveryType === 'table') {
+                if (!selectedTable) {
+                    alert("Vui lòng chọn số bàn!");
+                    return;
                 }
-            });
+                finalTable = "Bàn " + selectedTable;
+            } else {
+                finalTable = "Mang đi";
+            }
 
-            // Xử lý khi bấm nút Xóa
-            removeBtn.addEventListener('click', () => {
-                item.remove(); // Xóa nguyên khối HTML của món đó
-                calculateTotal(); // Tính lại tiền
-            });
-        });
+            alert(`🎉 Đặt hàng thành công!\n\nVị trí: ${finalTable}`);
 
-        // 3. Chạy tính tiền lần đầu tiên khi trang vừa load xong
-        calculateTotal();
+            // Xóa số bàn sau khi đặt xong để khách sau không bị trùng (Tùy chọn)
+            // localStorage.removeItem('selectedTable'); 
+
+            window.location.href = 'index.html';
+        }
+
+        initCheckout();
     </script>
 </body>
 
