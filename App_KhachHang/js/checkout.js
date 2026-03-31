@@ -54,34 +54,34 @@ if (deliveryType) {
 }
 
 // 5. Hàm xác nhận đặt hàng
-function placeOrder() {
+async function placeOrder() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const savedTable = localStorage.getItem('selectedTable');
-    const isAtTable = deliveryType ? deliveryType.value === 'table' : false;
-    const selectedTable = tableSelect ? tableSelect.value : "";
 
-    let finalLocation = "";
+    // Gom dữ liệu chuẩn bị gửi
+    const orderData = {
+        orderID: `CFS${Math.floor(Math.random() * 10000)}`,
+        items: cart,
+        totalPrice: parseInt(document.getElementById('final-total').innerText.replace(/[^0-9]/g, '')),
+        location: savedTable ? `Bàn ${savedTable}` : "Mang đi"
+    };
 
-    if (savedTable) {
-        finalLocation = "Bàn " + savedTable;
-    } else {
-        if (isAtTable) {
-            if (!selectedTable) {
-                if (tableError) tableError.classList.remove('d-none');
-                return;
-            }
-            finalLocation = "Bàn " + selectedTable;
-        } else {
-            finalLocation = "Mang đi";
+    try {
+        const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("🎉 Tuyệt vời Yến ơi! Đơn hàng đã lên hệ thống.");
+            localStorage.removeItem('cart');
+            window.location.href = 'index.html';
         }
+    } catch (error) {
+        alert("Có lỗi xảy ra, Yến kiểm tra lại Server nhé!");
     }
-
-    alert(`🎉 Đặt hàng thành công! ...`);
-
-    // XÓA GIỎ HÀNG VÀ SỐ BÀN SAU KHI ĐẶT XONG
-    localStorage.removeItem('cart');
-    localStorage.removeItem('selectedTable');
-
-    window.location.href = 'index.html';
 }
 
 // Chạy khởi tạo ngay khi load file js
