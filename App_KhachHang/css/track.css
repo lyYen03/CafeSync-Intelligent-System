@@ -1,0 +1,63 @@
+.step-container {
+    position: relative;
+    padding-top: 20px;
+}
+
+.step-line {
+    position: absolute;
+    top: 40px;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background: #eaddcf;
+    z-index: 1;
+}
+
+.step-line-progress {
+    position: absolute;
+    top: 40px;
+    left: 10%;
+    width: 0%;
+    height: 3px;
+    background: #e67e22; /* Màu cam đồng bộ nút Theo dõi */
+    z-index: 2;
+    transition: width 0.5s ease;
+}
+
+.step-item {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+}
+
+.step-icon {
+    width: 45px;
+    height: 45px;
+    background: white;
+    border: 3px solid #eaddcf;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    transition: 0.3s;
+    color: #adb5bd;
+}
+
+.step-item.active .step-icon {
+    border-color: #e67e22;
+    color: #e67e22;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(230, 126, 34, 0.3);
+}
+
+.step-item.active .step-label {
+    color: #e67e22;
+    font-weight: bold;
+}
+
+.step-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+}

@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700;800&display=swap"
         rel="stylesheet">
 
     <link rel="stylesheet" href="css/style.css">
@@ -19,94 +20,84 @@
 
 <body>
 
-    <nav class="navbar navbar-expand-lg shadow-sm sticky-top p-3">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-cup-hot-fill"></i> CaféSync
+    <nav class="navbar navbar-expand-lg shadow-sm sticky-top p-3"
+        style="background-color: var(--raw-umber) !important;">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold m-0 text-white" href="index.html">
+                <i class="bi bi-cup-hot-fill me-1"></i> CaféSync
             </a>
-            <div class="d-flex gap-3 align-items-center">
-                <a href="cart.html" class="btn btn-outline-dark position-relative rounded-pill px-4 fw-bold shadow-sm">
-                    <i class="bi bi-cart3"></i> Giỏ hàng
-                    <span id="cart-count" class="badge rounded-pill bg-danger">0</span>
+
+            <div class="d-flex gap-2 align-items-center ms-auto">
+                <a href="track-order.html" class="btn btn-sm rounded-pill px-3 shadow-sm btn-track-new">
+                    <i class="bi bi-truck me-1"></i> <span class="d-none d-sm-inline">Theo dõi</span>
+                </a>
+
+                <a href="cart.html" id="cart-btn"
+                    class="btn btn-outline-dark position-relative rounded-pill px-3 shadow-sm border-0 bg-transparent text-white">
+                    <i class="bi bi-cart3 fs-5"></i>
+                    <span id="cart-count"
+                        class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle"
+                        style="font-size: 0.65rem;">0</span>
+                </a>
+
+                <a href="login.html" id="user-btn"
+                    class="btn btn-dark rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0"
+                    style="width: 38px; height: 38px; background-color: var(--umber-dark);">
+                    <i class="bi bi-person-fill"></i>
                 </a>
             </div>
         </div>
     </nav>
 
     <div class="container mt-4">
-        <div class="p-4 p-md-5 mb-4 rounded-4 shadow-sm"
-            style="background: linear-gradient(rgba(130, 102, 68, 0.75), rgba(130, 102, 68, 0.9)), url('https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=1200&q=80') center/cover;">
+        <div class="hero-banner p-4 p-md-5 mb-4 rounded-4 shadow-sm text-white overflow-hidden">
             <div class="col-md-8 px-0">
-                <h1 class="display-5 fst-italic fw-bold text-white mb-3"
-                    style="font-family: 'Playfair Display', serif;">Khơi nguồn cảm hứng</h1>
-                <p class="fs-5 my-3 text-white" style="opacity: 0.95;">Trải nghiệm đặt món thông minh, tiện lợi và nhanh
-                    chóng cùng CaféSync.</p>
+                <h1 class="display-5 fw-bold mb-3">Khơi nguồn cảm hứng</h1>
+                <p class="fs-5 mb-4 opacity-90">Chào Yến! Hôm nay bạn muốn trải nghiệm hương vị nào?</p>
+
+                <div class="input-group w-100 w-md-75 shadow-sm rounded-pill overflow-hidden bg-white">
+                    <label for="main-search" class="visually-hidden">Tìm kiếm món ăn</label>
+                    <input type="text" id="main-search" name="search" class="form-control border-0 p-3 shadow-none"
+                        placeholder="Tìm món bạn thích...">
+                    <button class="btn btn-white px-4 border-0" aria-label="Nút tìm kiếm">
+                        <i class="bi bi-search text-dark"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="container mt-4 mb-5">
-        <h4 class="mb-3 fw-bold" style="font-family: 'Playfair Display', serif; color: var(--raw-umber);">Gợi ý hôm nay
-            ✨</h4>
-
-        <div class="d-flex gap-2 mb-4 overflow-auto pb-2" style="white-space: nowrap;">
-            <button class="btn rounded-pill px-4 fw-bold shadow-sm"
-                style="background-color: var(--raw-umber); color: var(--cosmic-latte);">Tất cả</button>
-            <button class="btn rounded-pill px-4 fw-bold shadow-sm"
-                style="background-color: white; color: var(--umber-dark); border: 1px solid #eaddcf;">Cà Phê</button>
-            <button class="btn rounded-pill px-4 fw-bold shadow-sm"
-                style="background-color: white; color: var(--umber-dark); border: 1px solid #eaddcf;">Trà Trái
-                Cây</button>
-            <button class="btn rounded-pill px-4 fw-bold shadow-sm"
-                style="background-color: white; color: var(--umber-dark); border: 1px solid #eaddcf;">Đá Xay</button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Thực đơn ✨</h4>
+            <a href="track-order.html" class="text-decoration-none small fw-bold d-md-none"
+                style="color: var(--raw-umber);">Đơn hàng của tôi ></a>
         </div>
 
-        <div class="row g-3">
-            <div class="col-6 col-md-4">
-                <div class="card">
-                    <a href="detail.html" style="text-decoration: none;">
+        <div class="d-flex gap-2 mb-4 overflow-auto pb-2 scrollbar-hidden" style="white-space: nowrap;">
+            <button class="btn btn-dark rounded-pill px-4 fw-bold">Tất cả</button>
+            <button class="btn btn-outline-dark rounded-pill px-4 fw-bold">Cà Phê</button>
+            <button class="btn btn-outline-dark rounded-pill px-4 fw-bold">Trà Trái Cây</button>
+            <button class="btn btn-outline-dark rounded-pill px-4 fw-bold">Đá Xay</button>
+        </div>
+
+        <div class="row g-3" id="product-container">
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card h-100">
+                    <a href="detail.html" class="overflow-hidden">
                         <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80"
                             class="card-img-top" alt="Trà Đào Cam Sả">
                     </a>
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Trà Đào Cam Sả</h5>
-                        <p class="card-text small card-desc" style="color: #6c757d;">Vị trà đen đậm đà kết hợp hoàn hảo
-                            với vị chua thanh của cam vàng và hương thơm nồng nàn của sả tươi.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto price-btn-wrapper">
+                        <h6 class="card-title text-truncate">Trà Đào Cam Sả</h6>
+                        <p class="card-desc small text-muted mb-3 flex-grow-1">Vị thanh mát từ cam sả và trà đen đậm đà.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center price-btn-wrapper mt-auto">
                             <span class="price">35.000đ</span>
-                            <button class="btn btn-add-cart px-3"><i class="bi bi-plus-lg"></i> Thêm</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4">
-                <div class="card">
-                    <img src="https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=500&q=80"
-                        class="card-img-top" alt="Cà Phê Muối">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Cà Phê Muối</h5>
-                        <p class="card-text small card-desc" style="color: #6c757d;">Sự kết hợp bùng nổ giữa cà phê pha
-                            phin truyền thống mạnh mẽ và lớp kem muối béo ngậy, mằn mặn phía trên.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto price-btn-wrapper">
-                            <span class="price">29.000đ</span>
-                            <button class="btn btn-add-cart px-3"><i class="bi bi-plus-lg"></i> Thêm</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4">
-                <div class="card">
-                    <img src="https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?w=500&q=80"
-                        class="card-img-top" alt="Matcha Đá Xay">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Matcha Đá Xay</h5>
-                        <p class="card-text small card-desc" style="color: #6c757d;">Bột trà xanh Matcha xay nhuyễn cùng
-                            sữa tươi và đá viên, phủ lên trên là lớp whipping cream béo mịn.</p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto price-btn-wrapper">
-                            <span class="price">45.000đ</span>
-                            <button class="btn btn-add-cart px-3"><i class="bi bi-plus-lg"></i> Thêm</button>
+                            <button class="btn btn-add-cart btn-sm px-3 rounded-3"
+                                onclick="addToCart('Trà Đào Cam Sả', 35000)">
+                                <i class="bi bi-plus-lg me-1"></i>Thêm
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -114,41 +105,39 @@
         </div>
     </div>
 
-    <div id="chat-window" class="card shadow-lg border-0"
-        style="position: fixed; bottom: 90px; right: 20px; width: 320px; max-width: 90vw; display: none; z-index: 1000; border-radius: 15px; overflow: hidden;">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold"><i class="bi bi-robot me-2"></i>AI Tư Vấn Đồ Uống</h6>
+    <div id="chat-window" class="card shadow-lg border-0" style="display: none;">
+        <div class="card-header d-flex justify-content-between align-items-center text-white"
+            style="background-color: var(--raw-umber);">
+            <h6 class="mb-0 fw-bold small"><i class="bi bi-robot me-2"></i>Lisieen AI Tư Vấn</h6>
             <i class="bi bi-x-lg" id="close-chat" style="cursor: pointer;"></i>
         </div>
-        <div class="card-body chat-body-custom" style="height: 350px; overflow-y: auto;">
-            <div class="d-flex justify-content-start mb-3">
-                <div class="bg-white p-2 shadow-sm"
-                    style="border-radius: 0 15px 15px 15px; max-width: 85%; font-size: 0.9rem; color: var(--umber-dark);">
-                    Chào Yến! Mình là trợ lý ảo của CaféSync. Hôm nay bạn muốn uống món gì thanh mát hay đậm đà để mình
-                    gợi ý cho nhé? ☕
+        <div class="card-body chat-body-custom" id="chat-content" style="height: 300px; overflow-y: auto;">
+            <div class="d-flex justify-content-start mb-2">
+                <div class="bg-white p-2 rounded-3 shadow-sm border" style="max-width: 85%; font-size: 0.85rem;">
+                    Chào Yến! Mình là trợ lý ảo của CaféSync. Hôm nay bạn thấy thế nào? 😊
                 </div>
             </div>
         </div>
         <div class="card-footer bg-white border-0 p-2">
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Nhập yêu cầu..."
-                    style="border-radius: 20px 0 0 20px; font-size: 0.9rem; border-color: var(--raw-umber);">
-                <button class="btn text-white"
-                    style="border-radius: 0 20px 20px 0; background-color: var(--raw-umber);">
+                <input type="text" id="chat-input"
+                    class="form-control rounded-start-pill border-light-subtle shadow-none"
+                    placeholder="Nhập yêu cầu..." style="font-size: 0.85rem;">
+                <button class="btn rounded-end-pill btn-add-cart px-3" id="send-chat-btn">
                     <i class="bi bi-send-fill"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <button id="chatbot-btn" class="btn shadow-lg"
-        style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; z-index: 1000; border: none;">
-        <i class="bi bi-robot fs-3"></i>
+    <button id="chatbot-btn" class="btn shadow-lg d-flex align-items-center justify-content-center"
+        aria-label="Mở tư vấn AI">
+        <i class="bi bi-chat-dots-fill fs-3"></i>
     </button>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="js/main.js"></script>
+    <script src="js/ai-bot.js"></script>
 </body>
 
 </html>

@@ -5,67 +5,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh toán - CaféSync</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="css/checkout.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body class="bg-light">
 
-    <div class="d-flex align-items-center mb-4">
-        <a href="cart.html" class="text-dark me-3"><i class="bi bi-arrow-left fs-4"></i></a>
-        <h4 class="mb-0 fw-bold">Xác nhận đơn hàng</h4>
-    </div>
-
-    <div class="checkout-card">
-        <div class="section-title"><i class="bi bi-geo-alt"></i> Hình thức nhận hàng</div>
-
-        <div id="qr-info" class="alert alert-success d-none border-0 mb-0"
-            style="background-color: #f0f9f4; border-radius: 12px;">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            Đã xác nhận: **Bàn số <span id="display-table">--</span>**
+    <nav class="navbar shadow-sm p-3" style="background-color: #826644 !important;">
+        <div class="container">
+            <a class="text-decoration-none text-white fw-bold" href="cart.html">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại giỏ hàng
+            </a>
+            <span class="fw-bold text-white">Xác nhận đơn hàng</span>
         </div>
+    </nav>
 
-        <div id="manual-info">
-            <select id="delivery-type" class="form-select border-0 bg-light rounded-3 mb-3 p-3 fw-bold">
-                <option value="table">Dùng tại bàn (Tại quán)</option>
-                <option value="takeaway">Mang đi (Takeaway)</option>
-            </select>
+    <div class="container mt-4 mb-5">
+        <div class="row g-4">
+            <div class="col-md-7">
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-geo-alt me-2"></i>Hình thức nhận hàng</h5>
 
-            <div id="table-selection">
-                <p class="small text-muted mb-2"><i class="bi bi-info-circle"></i> Vui lòng chọn bàn trống hiện có:</p>
-                <select id="table-number" class="form-select border-0 bg-light rounded-3 p-3 fw-bold"
-                    style="border: 2px solid var(--raw-umber) !important;">
-                    <option value="">-- Chọn số bàn --</option>
-                </select>
-                <div id="table-error" class="text-danger small mt-2 d-none">
-                    <i class="bi bi-exclamation-triangle"></i> Bạn chưa chọn số bàn!
+                    <div id="manual-info">
+                        <div class="mb-3">
+                            <label for="delivery-type" class="form-label small fw-bold">Chọn hình thức:</label>
+                            <select class="form-select rounded-3 shadow-none border-light-subtle" id="delivery-type">
+                                <option value="at-table">Dùng tại bàn</option>
+                                <option value="takeaway">Mang về</option>
+                            </select>
+                        </div>
+
+                        <div id="table-selection" class="mb-3">
+                            <label for="table-number" class="form-label small fw-bold">Chọn số bàn:</label>
+                            <select class="form-select rounded-3 shadow-none border-light-subtle" id="table-number">
+                                <option value="">-- Chọn bàn trống --</option>
+                                <option value="1">Bàn số 1</option>
+                                <option value="2">Bàn số 2</option>
+                                <option value="3">Bàn số 3</option>
+                                <option value="4">Bàn số 4</option>
+                                <option value="5">Bàn số 5</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-receipt me-2"></i>Tóm tắt đơn hàng</h5>
+
+                    <div id="order-summary-list" class="mb-3"></div>
+
+                    <hr class="text-secondary opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="fw-bold fs-5 text-secondary">Tổng thanh toán</span>
+                        <span class="fw-bold fs-4" style="color: #826644;" id="final-total">0đ</span>
+                    </div>
+
+                    <button type="button" id="btn-place-order"
+                        class="btn btn-dark w-100 p-3 fw-bold rounded-4 shadow-sm border-0"
+                        style="background-color: #826644;">
+                        ĐẶT HÀNG NGAY
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="checkout-card">
-        <div class="section-title"><i class="bi bi-receipt"></i> Tóm tắt đơn hàng</div>
 
-        <div id="order-summary-list">
-        </div>
-
-        <hr style="opacity: 0.1;">
-        <div class="d-flex justify-content-between fw-bold fs-5">
-            <span>Tổng thanh toán</span>
-            <span id="final-total" style="color: var(--raw-umber);">0đ</span>
-        </div>
-    </div>
-
-    <button class="btn-confirm shadow-lg" onclick="placeOrder()">ĐẶT HÀNG NGAY</button>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/checkout.js"></script>
+
+    <script>
+        document.getElementById('delivery-type').addEventListener('change', function () {
+            const tableSelection = document.getElementById('table-selection');
+            if (this.value === 'takeaway') {
+                tableSelection.style.display = 'none';
+            } else {
+                tableSelection.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 
 </html>
