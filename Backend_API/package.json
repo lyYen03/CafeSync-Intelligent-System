@@ -1,0 +1,29 @@
+{
+  "name": "cafesync-intelligent-system",
+  "version": "1.0.0",
+  "description": "**Đề tài:** Hệ thống quản lý quán cà phê tối ưu vận hành và cá nhân hóa trải nghiệm khách hàng.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lyYen03/CafeSync-Intelligent-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lyYen03/CafeSync-Intelligent-System/issues"
+  },
+  "homepage": "https://github.com/lyYen03/CafeSync-Intelligent-System#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.3",
+    "multer": "^2.1.1",
+    "nodemon": "^3.1.14"
+  }
+}

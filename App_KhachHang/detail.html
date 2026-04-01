@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết món - CaféSync</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/detail.css">
+</head>
+
+<body>
+
+    <div class="fixed-top-action d-flex justify-content-between align-items-center p-3">
+        <a href="index.html" class="back-btn shadow-sm">
+            <i class="bi bi-chevron-left fs-5"></i>
+        </a>
+
+        <a href="cart.html" class="cart-btn-fixed shadow-sm">
+            <i class="bi bi-cart3 fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                id="cart-badge-count">0</span>
+        </a>
+    </div>
+
+    <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80" class="header-image" alt="Sản phẩm">
+
+    <div class="detail-container shadow-lg">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="item-name">Trà Đào Cam Sả</h1>
+            <span class="item-price">35.000đ</span>
+        </div>
+        <p class="text-muted mt-2">Sự hòa quyện giữa vị trà đào thanh mát, cam vàng mọng nước và hương sả đặc trưng. Một
+            lựa chọn tuyệt vời cho ngày hè năng động.</p>
+
+        <hr class="my-4" style="opacity: 0.1;">
+
+        <div class="option-title"><i class="bi bi-rulers"></i> Chọn Size</div>
+        <div class="d-flex gap-2">
+            <input type="radio" class="btn-check" name="size" id="sizeS" checked>
+            <label class="btn btn-outline-umber flex-fill" for="sizeS">Nhỏ (S)</label>
+
+            <input type="radio" class="btn-check" name="size" id="sizeM">
+            <label class="btn btn-outline-umber flex-fill" for="sizeM">Vừa (M) +5k</label>
+
+            <input type="radio" class="btn-check" name="size" id="sizeL">
+            <label class="btn btn-outline-umber flex-fill" for="sizeL">Lớn (L) +10k</label>
+        </div>
+
+        <div class="option-title"><i class="bi bi-moisture"></i> Mức độ đường</div>
+        <div class="d-flex gap-2 overflow-auto pb-2 scrollbar-hidden">
+            <input type="radio" class="btn-check" name="sugar" id="sugar0">
+            <label class="btn btn-outline-umber text-nowrap" for="sugar0">Không đường</label>
+
+            <input type="radio" class="btn-check" name="sugar" id="sugar50">
+            <label class="btn btn-outline-umber text-nowrap" for="sugar50">50% đường</label>
+
+            <input type="radio" class="btn-check" name="sugar" id="sugar100" checked>
+            <label class="btn btn-outline-umber text-nowrap" for="sugar100">100% đường</label>
+        </div>
+
+        <div class="option-title"><i class="bi bi-snow"></i> Mức độ đá</div>
+        <div class="d-flex gap-2 overflow-auto pb-2 scrollbar-hidden">
+            <input type="radio" class="btn-check" name="ice" id="ice0">
+            <label class="btn btn-outline-umber text-nowrap" for="ice0">Không đá</label>
+
+            <input type="radio" class="btn-check" name="ice" id="ice50">
+            <label class="btn btn-outline-umber text-nowrap" for="ice50">50% đá</label>
+
+            <input type="radio" class="btn-check" name="ice" id="ice100" checked>
+            <label class="btn btn-outline-umber text-nowrap" for="ice100">100% đá</label>
+        </div>
+
+        <div class="option-title"><i class="bi bi-pencil-square"></i> Ghi chú cho quán</div>
+        <textarea id="order-note" class="form-control shadow-sm border-0" rows="2"
+            placeholder="Ví dụ: Ít trà nhiều sữa, lấy thêm muỗng..."
+            style="border-radius: 12px; background-color: #fdfbf7; font-size: 0.9rem; padding: 12px;"></textarea>
+
+        <div class="alert mt-4 border-0" style="background-color: #fdfbf7; border-radius: 15px;">
+            <small class="text-muted d-block mb-1"><i class="bi bi-stars"></i> AI Gợi ý cho Yến:</small>
+            <span style="font-size: 0.9rem; font-style: italic;">"Món này sẽ ngon hơn nếu bạn chọn **50% đá** để giữ
+                được vị thơm của sả lâu hơn đó!"</span>
+        </div>
+    </div>
+
+    <div class="footer-action">
+        <div class="d-flex align-items-center mb-3">
+            <div class="d-flex align-items-center bg-light rounded-pill px-3 py-1 border">
+                <i class="bi bi-dash-circle fs-4" style="cursor: pointer;"></i>
+                <span class="mx-3 fw-bold">1</span>
+                <i class="bi bi-plus-circle fs-4" style="cursor: pointer; color: var(--raw-umber);"></i>
+            </div>
+            <div class="ms-auto fw-bold fs-5 text-dark" id="footer-price">35.000đ</div>
+        </div>
+        <button class="btn btn-add-main shadow">Thêm vào giỏ hàng</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/detail.js"></script>
+</body>
+
+</html>

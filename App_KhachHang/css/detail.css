@@ -1,0 +1,164 @@
+/* public/css/detail.css */
+:root {
+    --cosmic-latte: #FFF8E7;
+    --raw-umber: #826644;
+    --umber-dark: #5e482f;
+}
+
+body {
+    background-color: var(--cosmic-latte);
+    font-family: 'Inter', sans-serif;
+    color: var(--umber-dark);
+    /* padding-bottom lớn để không bị thanh footer che khuất nội dung cuối */
+    padding-bottom: 120px; 
+}
+
+/* --- THANH HEADER CỐ ĐỊNH (FIXED TOP) --- */
+.fixed-top-action {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    transition: all 0.3s ease;
+    /* Hiệu ứng bóng đổ nhẹ phía trên ảnh */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
+}
+
+/* Khi cuộn trang xuống, Header đổi sang màu trắng để dễ nhìn */
+.fixed-top-action.scrolled {
+    background: white;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn, .cart-btn-fixed {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--raw-umber);
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: 0.2s;
+}
+
+.back-btn:active, .cart-btn-fixed:active {
+    transform: scale(0.9);
+}
+
+.cart-btn-fixed {
+    position: relative;
+    color: var(--umber-dark);
+}
+
+/* --- HÌNH ẢNH SẢN PHẨM --- */
+.header-image {
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+}
+
+/* --- NỘI DUNG CHI TIẾT --- */
+.detail-container {
+    background: white;
+    border-radius: 30px 30px 0 0;
+    margin-top: -40px; /* Đè lên ảnh một chút tạo hiệu ứng mượt */
+    position: relative;
+    padding: 35px 20px;
+    min-height: 500px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+}
+
+.item-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.item-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--raw-umber);
+}
+
+/* --- CÁC TÙY CHỌN (OPTIONS) --- */
+.option-title {
+    font-weight: 700;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+.option-title i {
+    margin-right: 10px;
+    color: var(--raw-umber);
+    font-size: 1.2rem;
+}
+
+/* Nút Radio Custom */
+.btn-check:checked + .btn-outline-umber {
+    background-color: var(--raw-umber);
+    color: white;
+    border-color: var(--raw-umber);
+}
+
+.btn-outline-umber {
+    border: 1px solid #eaddcf;
+    color: var(--raw-umber);
+    border-radius: 12px;
+    padding: 10px 15px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background-color: #fdfbf7;
+    transition: 0.2s;
+}
+
+/* --- THANH ĐẶT HÀNG DƯỚI ĐÁY (FOOTER ACTION) --- */
+.footer-action {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 20px 25px;
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+    border-radius: 25px 25px 0 0;
+}
+
+.btn-add-main {
+    background-color: var(--raw-umber);
+    color: white;
+    border-radius: 15px;
+    padding: 14px;
+    width: 100%;
+    border: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 5px 15px rgba(130, 102, 68, 0.2);
+    transition: 0.3s;
+}
+
+.btn-add-main:hover {
+    background-color: var(--umber-dark);
+}
+
+.btn-add-main:active {
+    transform: translateY(2px);
+}
+
+/* Ẩn scrollbar cho các div chứa option đá/đường trên mobile */
+.overflow-auto::-webkit-scrollbar {
+    display: none;
+}
