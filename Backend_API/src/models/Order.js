@@ -6,11 +6,7 @@ const orderSchema = mongoose.Schema({
         {
             name: { type: String, required: true },
             quantity: { type: Number, required: true },
-<<<<<<< HEAD
-            price: { type: String, required: true },
-=======
-            price: { type: Number, required: true },
->>>>>>> origin/tai
+            price: { type: Number, required: true }, // Dùng Number để tính toán
             options: {
                 size: String,
                 sugar: String,

@@ -1,36 +1,27 @@
-<<<<<<< HEAD
-const express = require('express');
-const router = express.Router();
-const Order = require('../models/Order');
-
-// Route nhận đơn hàng từ khách
-router.post('/place-order', async (req, res) => {
-    try {
-        const newOrder = new Order(req.body);
-        const savedOrder = await newOrder.save();
-        res.status(201).json({ message: "Đặt món thành công!", order: savedOrder });
-    } catch (error) {
-        res.status(400).json({ message: "Lỗi khi đặt món", error: error.message });
-    }
-});
-=======
 const express = require("express");
 const router = express.Router();
 
 const {
-  createOrder,
-  getOrders,
-  getOrderById,
-  updateOrderStatus,
-  deleteOrder,
+    createOrder,
+    getOrders,
+    getOrderById,
+    updateOrderStatus,
+    deleteOrder,
 } = require("../controllers/orderController");
 
+// 1. Nhận đơn hàng (Dùng cho cả giao diện Khách và Admin)
+// Cả hai đường dẫn này đều sẽ chạy hàm createOrder của Tài
 router.post("/", createOrder);
+router.post("/place-order", createOrder); // Giữ cái này để code Frontend cũ của Yến không bị lỗi
+
+// 2. Lấy danh sách đơn hàng (Cho Admin của Tài)
 router.get("/", getOrders);
+
+// 3. Lấy chi tiết đơn hàng (Cho tính năng Theo dõi đơn của Yến)
 router.get("/:id", getOrderById);
 
+// 4. Cập nhật trạng thái & Xóa (Cho Admin)
 router.put("/:id/status", updateOrderStatus);
 router.delete("/:id", deleteOrder);
->>>>>>> origin/tai
 
 module.exports = router;
