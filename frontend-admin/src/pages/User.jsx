@@ -1,0 +1,152 @@
+import { useEffect, useState } from "react";
+import { Table, Typography, Spin, Button, Modal, Form, Input, Select, Popconfirm, message } from "antd";
+import axios from "axios";
+
+const { Title } = Typography;
+
+const UserManagementPage = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [form] = Form.useForm();
+
+  // Load users
+  const fetchUsers = () => {
+    setLoading(true);
+    axios.get("http://localhost:5000/api/users")
+      .then(res => setUsers(res.data))
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Open modal for add/edit
+  const openModal = (user = null) => {
+    setEditingUser(user);
+    setModalOpen(true);
+    if (user) {
+      form.setFieldsValue({ ...user, password: "" });
+    } else {
+      form.resetFields();
+    }
+  };
+
+  // Add or update user
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingUser) {
+        // Update
+        await axios.put(`http://localhost:5000/api/users/${editingUser._id}`, values);
+        message.success("Cập nhật thành công!");
+      } else {
+        // Add
+        await axios.post("http://localhost:5000/api/users", values);
+        message.success("Thêm mới thành công!");
+      }
+      setModalOpen(false);
+      fetchUsers();
+    } catch (err) {
+      message.error(err?.response?.data?.message || "Có lỗi xảy ra!");
+    }
+  };
+
+  // Delete user
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${id}`);
+      message.success("Xóa thành công!");
+      fetchUsers();
+    } catch {
+      message.error("Xóa thất bại!");
+    }
+  };
+
+  const columns = [
+    { title: "Tên đăng nhập", dataIndex: "username", key: "username" },
+    { title: "Tên", dataIndex: "name", key: "name" },
+    { title: "Vai trò", dataIndex: "role", key: "role" },
+    { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt", render: v => new Date(v).toLocaleString() },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_, record) => (
+        <>
+          <Button size="small" onClick={() => openModal(record)} style={{ marginRight: 8 }}>Sửa</Button>
+          <Popconfirm
+            title="Bạn chắc chắn muốn xóa?"
+            onConfirm={() => handleDelete(record._id)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button size="small" danger>Xóa</Button>
+          </Popconfirm>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <Title level={3}>👤 Quản lý Người dùng</Title>
+      <Button type="primary" style={{ marginBottom: 16 }} onClick={() => openModal()}>Thêm người dùng</Button>
+      {loading ? (
+        <Spin />
+      ) : (
+        <Table
+          dataSource={users}
+          columns={columns}
+          rowKey="_id"
+          pagination={{ pageSize: 8 }}
+        />
+      )}
+
+      <Modal
+        open={modalOpen}
+        title={editingUser ? "Sửa người dùng" : "Thêm người dùng"}
+        onCancel={() => setModalOpen(false)}
+        onOk={handleOk}
+        okText={editingUser ? "Cập nhật" : "Thêm"}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Tên đăng nhập"
+            name="username"
+            rules={[{ required: true, message: "Bắt buộc nhập tên đăng nhập" }]}
+          >
+            <Input />
+          </Form.Item>
+          {!editingUser && (
+            <Form.Item
+              label="Mật khẩu"
+              name="password"
+              rules={[{ required: true, message: "Bắt buộc nhập mật khẩu" }]}
+            >
+              <Input.Password />
+            </Form.Item>
+          )}
+          <Form.Item label="Tên" name="name">
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Vai trò"
+            name="role"
+            rules={[{ required: true, message: "Bắt buộc chọn vai trò" }]}
+          >
+            <Select>
+              <Select.Option value="admin">Admin</Select.Option>
+              <Select.Option value="nhanvien">Nhân viên</Select.Option>
+              <Select.Option value="user">User</Select.Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
+
+export default UserManagementPage;

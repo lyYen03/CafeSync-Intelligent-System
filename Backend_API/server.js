@@ -3,22 +3,34 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 const connectDB = require('./src/config/db');
-const Order = require('./src/models/Order');
 
-// 1. Cấu hình
+// 1. Cấu hình & Biến môi trường
 dotenv.config();
 
-// 2. Kết nối Database
-connectDB();
-
+// 2. Khởi tạo app (Quan trọng: Đặt trước khi dùng middleware)
 const app = express();
 
-// 3. Middleware
+// 3. Kết nối Database
+connectDB();
+
+// 4. Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../App_KhachHang')));
 
-// 4. View Routes (Giao diện)
+// Bắt lỗi parse JSON (Code của Tài giúp server không bị sập khi client gửi data lỗi)
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({ message: 'Dữ liệu JSON không hợp lệ' });
+    }
+    next();
+});
+
+// 5. Cấu hình thư mục tĩnh (Static folders)
+app.use(express.static(path.join(__dirname, '../App_KhachHang')));
+app.use('/admin', express.static(path.join(__dirname, '../Web_Admin'))); // Giao diện quản lý của Tài
+app.use('/images', express.static('public/images')); // Thư mục chứa ảnh món ăn
+
+// 6. Routes giao diện (Phần của Yến)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../App_KhachHang/index.html'));
 });
@@ -35,54 +47,27 @@ app.get('/track-order', (req, res) => {
     res.sendFile(path.join(__dirname, '../App_KhachHang/track-order.html'));
 });
 
-// 5. API Routes (Xử lý dữ liệu)
+// 7. API Routes (Sử dụng hệ thống Route của Tài cho gọn)
+const authRoutes = require("./src/routes/authRoutes");
+const orderRoutes = require("./src/routes/orderRoutes");
+const productRoutes = require('./src/routes/productRoutes');
+const categoryRoutes = require('./src/routes/category.routes');
+const userRoutes = require("./src/routes/userRoutes");
+const ingredientRoutes = require("./src/routes/ingredientRoutes");
+const reportRoutes = require("./src/routes/reportRoutes");
+// const aiRoutes = require("./src/routes/aiRoutes"); // Bật dòng này nếu Yến đã có file aiRoutes
 
-// API nhận đơn hàng
-app.post('/api/orders', async (req, res) => {
-    console.log("📩 Nhận được đơn hàng mới:", req.body.orderID);
+app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes); // Đã bao gồm cả logic tạo đơn và lấy đơn của Yến
+app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/ingredients", ingredientRoutes);
+app.use("/api/reports", reportRoutes);
+// app.use("/api/ai", aiRoutes); 
 
-    try {
-        const newOrder = new Order(req.body);
-        const savedOrder = await newOrder.save();
-
-        console.log("✅ Lưu MongoDB thành công:", savedOrder.orderID);
-
-        // DÒNG NÀY LÀ CỨU CÁNH: Gửi tín hiệu về để Frontend biết mà tắt "Đang gửi đơn"
-        return res.status(201).json({
-            success: true,
-            message: "Đơn hàng đã được gửi tới quán!",
-            order: savedOrder
-        });
-
-    } catch (error) {
-        console.error("❌ Lỗi lưu đơn hàng:", error.message);
-        // Trả về lỗi để Frontend hiện SweetAlert báo lỗi, không bị treo nút
-        return res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// API lấy chi tiết đơn hàng theo ID
-app.get('/api/orders/:id', async (req, res) => {
-    try {
-        // Kiểm tra nếu id là 'latest' thì chuyển hướng logic
-        if (req.params.id === 'latest') {
-            const lastOrder = await Order.findOne().sort({ createdAt: -1 });
-            return res.json(lastOrder);
-        }
-
-        const order = await Order.findById(req.params.id);
-        if (!order) return res.status(404).json({ message: "Không tìm thấy" });
-        res.json(order);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 6. Khởi chạy
+// 8. Khởi chạy server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 CaféSync Server: http://localhost:${PORT}`);
+    console.log(`🚀 CaféSync Server đang chạy tại: http://localhost:${PORT}`);
 });

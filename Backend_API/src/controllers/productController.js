@@ -1,0 +1,75 @@
+const Product = require('../models/Product');
+
+// GET /api/products
+const getProducts = async (req, res) => {
+  try {
+    const { category } = req.query;
+
+    let filter = {};
+
+    // nếu có category thì lọc
+    if (category) {
+      filter.category = category;
+    }
+
+    const products = await Product.find(filter);
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST create product
+
+// POST /products
+const createProduct = async (req, res) => {
+  try {
+    const data = req.body;
+
+    if (Array.isArray(data)) {
+      const products = await Product.insertMany(data);
+      return res.status(201).json(products);
+    } else {
+      const product = new Product(data);
+      await product.save();
+      return res.status(201).json(product);
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const updateProduct = async (req, res) => {
+    try {
+        const updated = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
+        if (!updated) {
+            return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+        }
+
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+// DELETE product
+const deleteProduct = async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Đã xóa sản phẩm" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {
+    getProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct
+};

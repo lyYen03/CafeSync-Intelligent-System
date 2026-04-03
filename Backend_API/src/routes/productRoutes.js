@@ -1,0 +1,31 @@
+const express = require('express');
+const router = express.Router();
+
+const { 
+    getProducts, 
+    createProduct, 
+    deleteProduct, 
+    updateProduct 
+} = require('../controllers/productController');
+
+const upload = require('../config/upload');
+// upload nhiều ảnh
+router.post('/upload', upload.array('images', 10), (req, res) => {
+    const imageUrls = req.files.map(file => `/images/${file.filename}`);
+    res.json({
+        imageUrls
+    });
+});
+// GET tất cả sản phẩm
+router.get('/', getProducts);
+
+// Thêm sản phẩm
+router.post('/', createProduct);
+
+// Xóa sản phẩm
+router.delete('/:id', deleteProduct);
+
+// Update sản phẩm
+router.put('/:id', updateProduct);
+
+module.exports = router;
