@@ -3,27 +3,33 @@ const bcrypt = require("bcryptjs");
 
 const UserSchema = new mongoose.Schema(
   {
-    username: { type: String, unique: true, required: true }, // Tài dùng để đăng nhập admin
+    username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
-    name: { type: String, required: true }, // Tên của Yến
-    email: { type: String, unique: true, sparse: true }, // Yến thêm vào, dùng sparse để không lỗi nếu khách không nhập
-    phone: { type: String }, // Trường phone của Yến
-    role: { type: String, default: "user" }, // Mặc định là user, Tài sẽ chỉnh admin sau
+    name: { type: String, required: true },
+    email: { type: String, unique: true, sparse: true },
+    phone: { type: String },
+    role: { type: String, default: "user" },
   },
-  { timestamps: true } // Tài thêm cái này để tự động có ngày tạo/cập nhật
+  { timestamps: true }
 );
 
-// 1. So sánh mật khẩu (Hàm của Tài viết rất tiện)
 UserSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// 2. Tự động mã hóa mật khẩu trước khi lưu (Cả Yến và Tài đều có, rất bảo mật)
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  if (next) next();
+// Thay đoạn code cũ bằng đoạn này để hết lỗi "next"
+UserSchema.pre("save", async function () {
+  // Nếu mật khẩu không thay đổi thì không làm gì cả
+  if (!this.isModified("password")) return;
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    // Với async function, mình không cần gọi next() nữa, 
+    // Mongoose sẽ tự biết khi nào xong.
+  } catch (err) {
+    throw err; // Báo lỗi nếu có vấn đề khi băm mật khẩu
+  }
 });
 
 module.exports = mongoose.model("User", UserSchema);

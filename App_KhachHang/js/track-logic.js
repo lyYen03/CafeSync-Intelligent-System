@@ -1,115 +1,121 @@
 /**
- * Lấy thông tin và cập nhật trạng thái đơn hàng
+ * js/track-logic.js
+ * Bản dứt điểm lỗi xoay vòng - Tối ưu hóa đường dẫn API
  */
 async function fetchOrderStatus() {
     const orderDBId = localStorage.getItem('lastOrderDBId');
+    const detailsContainer = document.getElementById('order-details-list');
 
-    // Sử dụng đường dẫn tương đối để tránh lỗi CORS khi chạy cùng cổng 5000
+    // Nếu không tìm thấy vùng hiển thị món thì thoát để tránh lỗi Console
+    if (!detailsContainer) return;
+
+    // QUAN TRỌNG: Dùng đường dẫn tuyệt đối đến cổng 5000 của Tài
+    const baseUrl = 'http://localhost:5000/api/orders';
     const url = (orderDBId && orderDBId !== "null" && orderDBId !== "undefined")
-        ? `/api/orders/${orderDBId}`
-        : `/api/orders/latest`;
+        ? `${baseUrl}/${orderDBId}`
+        : `${baseUrl}/latest`;
 
     try {
+        console.log("📡 Đang kết nối API tại:", url);
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Kết nối server thất bại");
 
-        const order = await res.json();
-        if (!order) {
-            const statusText = document.getElementById('status-text');
-            if (statusText) statusText.innerText = "Chưa có dữ liệu đơn hàng";
+        if (!res.ok) {
+            // PHÁ BĂNG: Xóa vòng xoay ngay lập tức nếu Server báo lỗi
+            detailsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-warning fs-2"></i>
+                    <p class="mt-2 text-muted small">Server báo lỗi ${res.status}.<br>Yến bảo Tài kiểm tra lại API nhé!</p>
+                </div>`;
             return;
         }
 
-        // 1. HIỂN THỊ TỔNG TIỀN (Chuẩn định dạng VNĐ)
-        const totalDisplay = document.getElementById('total-price-display');
-        if (totalDisplay) {
-            const finalPrice = Number(order.totalPrice) || 0;
-            totalDisplay.innerText = finalPrice.toLocaleString('vi-VN') + 'đ';
-        }
+        const responseData = await res.json();
+        console.log("📦 Dữ liệu đơn hàng nhận về:", responseData);
 
-        // 2. HIỂN THỊ DANH SÁCH MÓN ĂN
-        const detailsContainer = document.getElementById('order-details-list');
-        if (detailsContainer && order.items) {
-            detailsContainer.innerHTML = order.items.map(item => {
-                // Đảm bảo lấy được giá trị số để tính toán
-                const pricePerItem = typeof item.price === 'number'
-                    ? item.price
-                    : parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+        // PHÁ BĂNG: Tự động bóc tách dữ liệu nếu Tài bọc trong field .order hoặc .data
+        const order = responseData.order || responseData.data || responseData;
 
-                return `
-                <div class="d-flex justify-content-between mb-2 border-bottom border-light pb-2">
+        // --- RENDER DỮ LIỆU & XÓA VÒNG XOAY ---
+        if (!order || !order.items || order.items.length === 0) {
+            detailsContainer.innerHTML = '<p class="text-center text-muted py-5">Đơn hàng hiện không có món nào.</p>';
+        } else {
+            // Lệnh này ghi đè hoàn toàn nội dung để mất Spinner
+            detailsContainer.innerHTML = order.items.map(item => `
+                <div class="d-flex justify-content-between mb-2 border-bottom border-light pb-2 animate__animated animate__fadeIn">
                     <div>
-                        <span class="fw-bold text-dark">${item.name}</span>
-                        <small class="text-muted d-block">Số lượng: ${item.quantity}</small>
+                        <span class="fw-bold text-dark" style="font-size: 0.9rem;">${item.name || 'Món ẩn danh'}</span>
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">Số lượng: ${item.quantity || 0}</small>
                     </div>
-                    <span class="fw-bold text-dark">${(pricePerItem * item.quantity).toLocaleString('vi-VN')}đ</span>
-                </div>`;
-            }).join('');
+                    <span class="fw-bold text-dark" style="font-size: 0.9rem;">${((item.price || 0) * (item.quantity || 0)).toLocaleString('vi-VN')}đ</span>
+                </div>
+            `).join('');
         }
 
-        // 3. CẬP NHẬT MÃ ĐƠN VÀ TRẠNG THÁI CHỮ
+        // Cập nhật các thông số hiển thị khác
+        const totalDisplay = document.getElementById('total-price-display');
         const idDisplay = document.getElementById('order-id-display');
         const statusText = document.getElementById('status-text');
 
+        if (totalDisplay) totalDisplay.innerText = Number(order.totalPrice || 0).toLocaleString('vi-VN') + 'đ';
         if (idDisplay) idDisplay.innerText = `#${order.orderID || 'N/A'}`;
-        if (statusText) statusText.innerText = order.status || 'Đang xử lý';
 
-        // 4. CẬP NHẬT THANH TIẾN TRÌNH (TIMELINE)
+        if (statusText) {
+            statusText.innerText = order.status || 'Chờ xác nhận';
+            // Đổi màu trạng thái cho sinh động
+            statusText.style.color = (order.status === 'Hoàn thành') ? '#198754' : '#826644';
+        }
+
+        // Cập nhật thanh tiến trình
         updateTimeline(order.status);
 
     } catch (err) {
-        console.error("❌ Lỗi cập nhật trạng thái đơn hàng:", err);
+        console.error("❌ Lỗi Fetch:", err);
+        // PHÁ BĂNG: Xóa vòng xoay ngay lập tức khi lỗi kết nối mạng
+        detailsContainer.innerHTML = `
+            <div class="text-center py-4">
+                <i class="bi bi-wifi-off text-danger fs-1"></i>
+                <p class="mt-2 text-danger fw-bold">Lỗi kết nối máy chủ!</p>
+                <small class="text-muted">Yến kiểm tra Terminal xem Backend đã chạy chưa nha.</small>
+            </div>`;
     }
 }
 
 /**
- * Cập nhật giao diện thanh tiến trình dựa trên trạng thái đơn hàng
+ * 2. Cập nhật thanh tiến trình (Timeline)
  */
 function updateTimeline(status) {
-    // Bản đồ trạng thái tương ứng với các bước trên giao diện
     const statusMap = {
         'Chờ xác nhận': 1,
         'Đã xác nhận': 1,
         'Đang pha chế': 2,
         'Pha chế': 2,
         'Hoàn thành': 3,
-        'Đã xong': 3,
-        'Đang giao': 3 // Dự phòng cho tương lai
+        'Đã xong': 3
     };
 
     const currentStep = statusMap[status] || 1;
-    const widths = { 1: '0%', 2: '45%', 3: '90%' };
+    const widths = { 1: '0%', 2: '50%', 3: '100%' };
 
-    // Cập nhật độ dài thanh Progress
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) {
         progressBar.style.width = widths[currentStep];
-        progressBar.style.transition = "width 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+        progressBar.style.transition = "width 1s ease-in-out";
     }
 
-    // Cập nhật trạng thái các vòng tròn (step)
     for (let i = 1; i <= 3; i++) {
-        const stepCircle = document.getElementById(`step-${i}`);
-        if (stepCircle) {
-            if (i <= currentStep) {
-                stepCircle.classList.add('active');
-            } else {
-                stepCircle.classList.remove('active');
-            }
+        const step = document.getElementById(`step-${i}`);
+        if (step) {
+            (i <= currentStep) ? step.classList.add('active') : step.classList.remove('active');
         }
     }
 }
 
-// KHỞI CHẠY VÀ THIẾT LẬP LÀM MỚI TỰ ĐỘNG
+// KHỞI CHẠY TỰ ĐỘNG
 document.addEventListener('DOMContentLoaded', () => {
-    // Gọi lần đầu ngay khi trang load
     fetchOrderStatus();
-
-    // Tự động kiểm tra trạng thái mới mỗi 10 giây
+    // Tự động kiểm tra sau mỗi 10 giây để cập nhật trạng thái mới nhất
     const pollInterval = setInterval(fetchOrderStatus, 10000);
 
-    // Dọn dẹp interval khi người dùng rời trang để tối ưu hiệu năng
-    window.addEventListener('beforeunload', () => {
-        clearInterval(pollInterval);
-    });
+    // Xóa interval khi người dùng rời trang để tránh tốn tài nguyên máy Yến
+    window.addEventListener('beforeunload', () => clearInterval(pollInterval));
 });

@@ -1,0 +1,52 @@
+body {
+    background: #f8f9fa;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 20px;
+}
+
+.nav-pills .nav-link {
+    color: #6f4e37;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #6f4e37;
+    color: white;
+}
+
+.btn-auth {
+    background-color: #6f4e37;
+    color: white;
+    border-radius: 12px;
+    transition: 0.3s all ease;
+    border: none;
+}
+
+.btn-auth:hover {
+    background-color: #5d4037;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(111, 78, 55, 0.3);
+}
+
+.form-control {
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #eaddcf;
+    background-color: #fcfaf8;
+}
+
+.form-control:focus {
+    border-color: #6f4e37;
+    box-shadow: 0 0 0 0.25rem rgba(111, 78, 55, 0.1);
+    background-color: white;
+}

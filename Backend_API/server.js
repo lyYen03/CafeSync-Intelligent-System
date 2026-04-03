@@ -3,71 +3,123 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 const connectDB = require('./src/config/db');
+const Groq = require("groq-sdk");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// 1. Cấu hình & Biến môi trường
+// 1. CẤU HÌNH & KHỞI TẠO
 dotenv.config();
-
-// 2. Khởi tạo app (Quan trọng: Đặt trước khi dùng middleware)
 const app = express();
 
-// 3. Kết nối Database
+// 2. KẾT NỐI DATABASE
 connectDB();
 
-// 4. Middleware
+// 3. KHỞI TẠO AI GROQ
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+let chatContext = [];
+
+// 4. MIDDLEWARE
 app.use(cors());
 app.use(express.json());
 
-// Bắt lỗi parse JSON (Code của Tài giúp server không bị sập khi client gửi data lỗi)
-app.use((err, req, res, next) => {
-    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-        return res.status(400).json({ message: 'Dữ liệu JSON không hợp lệ' });
+// 5. CẤU HÌNH THƯ MỤC TĨNH
+const clientPath = path.join(__dirname, '../App_KhachHang');
+app.use(express.static(clientPath));
+app.use('/admin', express.static(path.join(__dirname, '../Web_Admin')));
+app.use('/images', express.static('public/images'));
+
+// 6. ROUTES GIAO DIỆN (HTML)
+app.get('/', (req, res) => res.sendFile(path.join(clientPath, 'index.html')));
+app.get('/cart', (req, res) => res.sendFile(path.join(clientPath, 'cart.html')));
+app.get('/checkout', (req, res) => res.sendFile(path.join(clientPath, 'checkout.html')));
+app.get('/track-order', (req, res) => res.sendFile(path.join(clientPath, 'track-order.html')));
+
+// 7. API CHỨC NĂNG (Hệ thống gốc của Tài)
+app.use("/api/auth", require("./src/routes/authRoutes"));
+app.use("/api/orders", require("./src/routes/orderRoutes"));
+app.use("/api/products", require("./src/routes/productRoutes"));
+app.use("/api/categories", require("./src/routes/category.routes"));
+app.use("/api/users", require("./src/routes/userRoutes"));
+app.use("/api/ingredients", require("./src/routes/ingredientRoutes"));
+app.use("/api/reports", require("./src/routes/reportRoutes"));
+
+// --- 8. CHỨC NĂNG ĐĂNG KÝ & ĐĂNG NHẬP ---
+const User = require('./src/models/User');
+
+app.post('/api/auth/register-custom', async (req, res) => {
+    try {
+        const { name, email, password, phone } = req.body;
+
+        // Kiểm tra email tồn tại
+        const exist = await User.findOne({ email });
+        if (exist) return res.status(400).json({ message: "Email này đã được sử dụng!" });
+
+        // Tạo user mới (mật khẩu tự mã hóa trong Model)
+        const newUser = new User({
+            name,
+            email,
+            username: email,
+            password,
+            phone
+        });
+
+        await newUser.save();
+        res.json({ message: "Đăng ký tài khoản thành công! 🎉" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Lỗi hệ thống khi đăng ký." });
     }
-    next();
 });
 
-// 5. Cấu hình thư mục tĩnh (Static folders)
-app.use(express.static(path.join(__dirname, '../App_KhachHang')));
-app.use('/admin', express.static(path.join(__dirname, '../Web_Admin'))); // Giao diện quản lý của Tài
-app.use('/images', express.static('public/images')); // Thư mục chứa ảnh món ăn
+app.post('/api/auth/login-custom', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại!" });
 
-// 6. Routes giao diện (Phần của Yến)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../App_KhachHang/index.html'));
+        // So sánh mật khẩu
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác!" });
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'CAFE_SYNC_SECRET', { expiresIn: '1d' });
+        res.json({ token, user: { name: user.name, email: user.email } });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi hệ thống khi đăng nhập." });
+    }
 });
 
-app.get('/cart', (req, res) => {
-    res.sendFile(path.join(__dirname, '../App_KhachHang/cart.html'));
+// --- 9. API TÌM KIẾM & CHAT AI ---
+app.get('/api/search/products', async (req, res) => {
+    try {
+        const term = req.query.q || "";
+        const Product = require('./src/models/Product');
+        const results = await Product.find({ name: { $regex: term, $options: 'i' } });
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi tìm kiếm sản phẩm." });
+    }
 });
 
-app.get('/checkout', (req, res) => {
-    res.sendFile(path.join(__dirname, '../App_KhachHang/checkout.html'));
+app.post('/api/ai/chat', async (req, res) => {
+    const user = req.body.userName || "Khách hàng";
+    const msg = req.body.message || "";
+    try {
+        chatContext.push({ role: "user", content: msg });
+        if (chatContext.length > 6) chatContext.shift();
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [{ role: "system", content: "Bạn là Lisieen, trợ lý ảo thông minh của hệ thống CaféSync." }, ...chatContext],
+            model: "llama-3.1-8b-instant",
+        });
+        const reply = chatCompletion.choices[0]?.message?.content || "";
+        chatContext.push({ role: "assistant", content: reply });
+        res.json({ reply: reply.trim() });
+    } catch (error) {
+        res.json({ reply: "Lisieen hiện đang bận một chút, bạn thử lại sau nhé!" });
+    }
 });
 
-app.get('/track-order', (req, res) => {
-    res.sendFile(path.join(__dirname, '../App_KhachHang/track-order.html'));
-});
-
-// 7. API Routes (Sử dụng hệ thống Route của Tài cho gọn)
-const authRoutes = require("./src/routes/authRoutes");
-const orderRoutes = require("./src/routes/orderRoutes");
-const productRoutes = require('./src/routes/productRoutes');
-const categoryRoutes = require('./src/routes/category.routes');
-const userRoutes = require("./src/routes/userRoutes");
-const ingredientRoutes = require("./src/routes/ingredientRoutes");
-const reportRoutes = require("./src/routes/reportRoutes");
-// const aiRoutes = require("./src/routes/aiRoutes"); // Bật dòng này nếu Yến đã có file aiRoutes
-
-app.use("/api/auth", authRoutes);
-app.use("/api/orders", orderRoutes); // Đã bao gồm cả logic tạo đơn và lấy đơn của Yến
-app.use("/api/products", productRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/ingredients", ingredientRoutes);
-app.use("/api/reports", reportRoutes);
-// app.use("/api/ai", aiRoutes); 
-
-// 8. Khởi chạy server
+// 10. KHỞI CHẠY
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 CaféSync Server đang chạy tại: http://localhost:${PORT}`);
+    console.log(`🚀 Server CaféSync Ready tại cổng: ${PORT}`);
 });

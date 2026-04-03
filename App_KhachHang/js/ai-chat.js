@@ -1,58 +1,68 @@
-// Hàm gửi tin nhắn tới Lisieen AI
+/**
+ * js/ai-chat.js
+ * Logic điều khiển Lisieen AI Chatbot - CaféSync
+ */
+
+function showTypingIndicator() {
+    const content = document.getElementById('chat-content');
+    if (!content) return;
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typing-indicator';
+    typingDiv.className = 'd-flex justify-content-start mb-3 animate__animated animate__fadeIn';
+    typingDiv.innerHTML = `
+        <div class="ai-bubble-typing p-2 rounded-3 shadow-sm border">
+            <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+        </div>`;
+    content.appendChild(typingDiv);
+    content.scrollTop = content.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) indicator.remove();
+}
+
 async function sendMessage() {
     const input = document.getElementById('chat-input');
     const content = document.getElementById('chat-content');
-
-    // Kiểm tra nếu ô nhập trống thì không gửi
     if (!input || !input.value.trim()) return;
 
     const userMsg = input.value;
+    input.value = '';
 
-    // 1. Hiển thị tin nhắn của người dùng (Yến) - Căn phải, màu nâu nhạt
     content.innerHTML += `
-        <div class="d-flex justify-content-end mb-3">
-            <div class="p-2 rounded-3 shadow-sm text-white" 
-                 style="max-width: 85%; font-size: 0.85rem; background-color: #a67c52;">
+        <div class="d-flex justify-content-end mb-3 animate__animated animate__fadeInRight animate__faster">
+            <div class="user-chat-bubble p-2 rounded-3 shadow-sm text-white">
                 ${userMsg}
             </div>
         </div>`;
+    content.scrollTop = content.scrollHeight;
 
-    input.value = ''; // Xóa ô nhập sau khi gửi
-    content.scrollTop = content.scrollHeight; // Tự động cuộn xuống cuối
+    showTypingIndicator();
 
     try {
-        // 2. Gọi API đến Backend đã cấu hình ở Port 5000
         const response = await fetch('http://localhost:5000/api/ai/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: userMsg,
-                userName: "Yến" // Bạn có thể lấy từ localStorage nếu đã đăng nhập
-            })
+            body: JSON.stringify({ message: userMsg, userName: "Yến" })
         });
 
         const data = await response.json();
+        removeTypingIndicator();
 
-        // 3. Hiển thị phản hồi từ Lisieen AI - Căn trái, màu trắng
         content.innerHTML += `
-            <div class="d-flex justify-content-start mb-3">
-                <div class="bg-white p-2 rounded-3 shadow-sm border" 
-                     style="max-width: 85%; font-size: 0.85rem; border-left: 4px solid var(--raw-umber) !important;">
-                    <strong style="color: var(--raw-umber);">Lisieen:</strong> ${data.reply}
+            <div class="d-flex justify-content-start mb-3 animate__animated animate__fadeInLeft animate__faster">
+                <div class="ai-chat-bubble bg-white p-2 rounded-3 shadow-sm border">
+                    <strong class="ai-name">Lisieen:</strong> ${data.reply}
                 </div>
             </div>`;
-
-        content.scrollTop = content.scrollHeight;
     } catch (err) {
-        console.error("Lỗi kết nối AI:", err);
-        content.innerHTML += `
-            <div class="text-center small text-danger my-2">
-                <i class="bi bi-exclamation-triangle"></i> Lisieen đang bận pha máy, thử lại sau nhé!
-            </div>`;
+        removeTypingIndicator();
+        content.innerHTML += `<div class="text-center small text-danger my-2">Lisieen đang bận pha máy, thử lại sau nhé!</div>`;
     }
+    content.scrollTop = content.scrollHeight;
 }
 
-// 4. Thiết lập các sự kiện khi trang web tải xong
 document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('send-chat-btn');
     const input = document.getElementById('chat-input');
@@ -60,34 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatWindow = document.getElementById('chat-window');
     const closeChat = document.getElementById('close-chat');
 
-    // Mở khung chat
-    if (chatBtn) {
-        chatBtn.onclick = () => {
-            chatWindow.style.display = 'flex'; // Hiện khung chat
-            chatBtn.style.display = 'none';    // Ẩn nút tròn
-        };
-    }
-
-    // Đóng khung chat
-    if (closeChat) {
-        closeChat.onclick = () => {
-            chatWindow.style.display = 'none'; // Ẩn khung chat
-            chatBtn.style.display = 'flex';    // Hiện lại nút tròn
-        };
-    }
-
-    // Gửi bằng nút bấm
-    if (sendBtn) {
-        sendBtn.onclick = sendMessage;
-    }
-
-    // Gửi bằng phím Enter
-    if (input) {
-        input.onkeypress = (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // Ngăn xuống dòng
-                sendMessage();
-            }
-        };
-    }
+    if (chatBtn) chatBtn.onclick = () => { chatWindow.style.display = 'flex'; chatBtn.style.display = 'none'; input.focus(); };
+    if (closeChat) closeChat.onclick = () => { chatWindow.style.display = 'none'; chatBtn.style.display = 'flex'; };
+    if (sendBtn) sendBtn.onclick = sendMessage;
+    if (input) input.onkeypress = (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } };
 });

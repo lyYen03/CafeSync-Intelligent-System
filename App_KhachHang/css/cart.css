@@ -1,29 +1,105 @@
 /* public/css/cart.css */
 :root {
-    --cosmic-latte: #FFF8E7;
     --raw-umber: #826644;
-    --umber-dark: #5e482f;
-    --card-bg: #FFFFFF;
+    --umber-light: #f4f1ee;
+    --bg-gray: #f8f9fa;
 }
 
-body {
-    background-color: var(--cosmic-latte);
-    color: var(--umber-dark);
-    font-family: 'Inter', sans-serif;
-    padding-bottom: 100px;
+.bg-light-custom {
+    background-color: var(--bg-gray);
+    min-height: 100vh;
 }
 
-.navbar { background-color: var(--raw-umber) !important; }
-.page-title { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--cosmic-latte); font-size: 1.25rem; margin: 0; }
-.back-btn { color: var(--cosmic-latte); font-size: 1.5rem; text-decoration: none; }
+/* Header Tinh tế */
+.page-title-main {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0;
+    color: #333;
+}
 
-.cart-item { background-color: var(--card-bg); border-radius: 16px; border: none; box-shadow: 0 4px 12px rgba(130, 102, 68, 0.05); margin-bottom: 15px; }
-.cart-img { border-radius: 12px; width: 80px; height: 80px; object-fit: cover; }
-.item-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.1rem; color: var(--umber-dark); margin-bottom: 0; }
-.item-price { color: var(--raw-umber); font-weight: 700; }
+.back-btn-circle {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdfbf7;
+    border-radius: 12px;
+    color: var(--raw-umber);
+    text-decoration: none;
+    transition: 0.3s;
+    border: 1px solid #eee;
+}
 
-.qty-btn { border: 1px solid #eaddcf; background-color: var(--card-bg); color: var(--umber-dark); width: 30px; height: 30px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0; }
-.qty-input { width: 40px; text-align: center; border: none; background: transparent; font-weight: 600; color: var(--umber-dark); }
+.back-btn-circle:hover {
+    background: var(--raw-umber);
+    color: white;
+}
 
-.checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--card-bg); border-radius: 20px 20px 0 0; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05); padding: 20px; z-index: 1000; }
-.btn-checkout { background-color: var(--raw-umber); color: var(--cosmic-latte); border-radius: 25px; font-weight: 600; padding: 12px; width: 100%; font-size: 1.1rem; border: none; }
+/* Empty State (Lúc giỏ hàng trống) */
+.empty-icon-circle {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #ddd;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+}
+
+.btn-go-shop {
+    background: var(--raw-umber);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+}
+
+/* Checkout Footer */
+.checkout-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 20px 0 30px;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -15px 40px rgba(0,0,0,0.06);
+    z-index: 1000;
+}
+
+.total-money {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--raw-umber);
+}
+
+.btn-confirm-order {
+    background: var(--raw-umber);
+    color: white;
+    border: none;
+    height: 60px;
+    border-radius: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.3s;
+}
+
+.btn-confirm-order:hover {
+    background: #634d35;
+    transform: translateY(-3px);
+}
+
+.cart-spacer {
+    height: 150px;
+}

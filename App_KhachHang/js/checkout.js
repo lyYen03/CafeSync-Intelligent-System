@@ -1,5 +1,5 @@
 /**
- * 1. Vẽ tóm tắt đơn hàng (Items list & Total)
+ * 1. Vẽ tóm tắt đơn hàng
  */
 function renderOrderSummary() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -8,7 +8,6 @@ function renderOrderSummary() {
     let totalMoney = 0;
 
     if (!container) return;
-
     if (cart.length === 0) {
         container.innerHTML = '<p class="text-muted text-center py-3">Giỏ hàng đang trống.</p>';
         if (totalDisplay) totalDisplay.innerText = '0đ';
@@ -16,11 +15,7 @@ function renderOrderSummary() {
     }
 
     container.innerHTML = cart.map(item => {
-        // Chuẩn hóa giá tiền về kiểu số
-        const price = typeof item.price === 'number'
-            ? item.price
-            : parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-
+        const price = typeof item.price === 'number' ? item.price : parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
         const itemTotal = price * item.quantity;
         totalMoney += itemTotal;
 
@@ -28,49 +23,35 @@ function renderOrderSummary() {
             <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                 <div style="flex: 1;">
                     <div class="fw-bold text-dark">${item.name} <span class="text-muted small">x${item.quantity}</span></div>
-                    ${item.options ? `
-                        <small class="text-muted d-block" style="font-size: 0.75rem; line-height: 1.2;">
-                            Size: ${item.options.size} | ${item.options.sugar} Đường | ${item.options.ice} Đá
-                        </small>
-                    ` : ''}
+                    ${item.options ? `<small class="text-muted d-block" style="font-size: 0.75rem;">Size: ${item.options.size} | ${item.options.sugar} | ${item.options.ice}</small>` : ''}
                 </div>
-                <div class="fw-bold text-dark text-end" style="min-width: 100px;">
-                    ${itemTotal.toLocaleString('vi-VN')}đ
-                </div>
+                <div class="fw-bold text-dark text-end">${itemTotal.toLocaleString('vi-VN')}đ</div>
             </div>`;
     }).join('');
 
-    if (totalDisplay) {
-        totalDisplay.innerText = totalMoney.toLocaleString('vi-VN') + 'đ';
-    }
+    if (totalDisplay) totalDisplay.innerText = totalMoney.toLocaleString('vi-VN') + 'đ';
 }
 
 /**
- * 2. Hàm xử lý đặt hàng chính
+ * 2. Hàm xử lý đặt hàng chính (Đã sửa lỗi treo nút)
  */
 async function placeOrder(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-    }
+    if (e) e.preventDefault();
 
     const btn = document.getElementById('btn-place-order');
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-    // Lấy thông tin bàn/hình thức nhận hàng từ giao diện
     const orderType = document.querySelector('select[name="order-type"]')?.value || "Tại bàn";
     const tableNo = document.querySelector('select[name="table-number"]')?.value || localStorage.getItem('selectedTable') || "Mang đi";
 
     if (cart.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'Giỏ hàng trống', text: 'Vui lòng chọn món trước khi đặt hàng!' });
+        Swal.fire({ icon: 'warning', title: 'Giỏ hàng trống', text: 'Vui lòng chọn món trước!' });
         return;
     }
 
-    // Hiệu ứng vô hiệu hóa nút
+    // BẬT TRẠNG THÁI LOAD
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Đang gửi đơn...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi đơn...';
 
-    // Tính tổng tiền cuối cùng
     const totalOrderMoney = cart.reduce((sum, item) => {
         const p = typeof item.price === 'number' ? item.price : parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
         return sum + (p * item.quantity);
@@ -78,15 +59,21 @@ async function placeOrder(e) {
 
     const orderData = {
         orderID: `CFS${Math.floor(Math.random() * 9000 + 1000)}`,
-        items: cart,
+        items: cart.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: typeof item.price === 'number' ? item.price : parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0,
+            options: item.options || { size: 'M', sugar: '100%', ice: '100%' },
+            note: item.note || ""
+        })),
         totalPrice: totalOrderMoney,
         location: orderType === "Mang đi" ? "Mang đi" : `Bàn ${tableNo}`,
-        status: "Chờ xác nhận",
-        createdAt: new Date()
+        status: "Chờ xác nhận"
     };
 
     try {
-        const response = await fetch('/api/orders', {
+        // GỬI ĐẾN SERVER CỔNG 5000 CỦA TÀI
+        const response = await fetch('http://localhost:5000/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
@@ -94,48 +81,39 @@ async function placeOrder(e) {
 
         const result = await response.json();
 
-        if (result.success) {
+        // TẮT LOAD NGAY KHI CÓ KẾT QUẢ (Dù thành công hay thất bại)
+        if (response.ok || result.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Đặt hàng thành công!',
-                text: 'Đơn hàng của bạn đã được chuyển đến quầy pha chế.',
+                text: 'Đơn hàng đã được gửi tới quán.',
                 confirmButtonColor: '#826644',
-                confirmButtonText: 'Theo dõi đơn ngay',
-                allowOutsideClick: false
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    localStorage.setItem('lastOrderDBId', result.order._id);
-                    localStorage.removeItem('cart'); // Xóa giỏ hàng sau khi đặt thành công
-                    window.location.href = 'track-order.html';
-                }
+                confirmButtonText: 'Theo dõi đơn'
+            }).then(() => {
+                localStorage.setItem('lastOrderDBId', result.order?._id || result._id);
+                localStorage.removeItem('cart');
+                window.location.href = 'track-order.html';
             });
         } else {
-            throw new Error("Server trả về lỗi thành công giả");
+            throw new Error(result.message || "Server từ chối đơn hàng");
         }
 
     } catch (error) {
-        console.error("❌ Checkout Error:", error);
+        console.error("❌ Lỗi đặt hàng:", error);
+        // TẮT LOAD VÀ HIỆN LỖI ĐỂ NÚT KHÔNG XOAY MÃI
+        btn.disabled = false;
+        btn.innerText = "THANH TOÁN NGAY";
+
         Swal.fire({
             icon: 'error',
             title: 'Lỗi hệ thống',
-            text: 'Không thể kết nối với máy chủ. Vui lòng thử lại!'
+            text: 'Không kết nối được server. Yến kiểm tra xem Terminal đã chạy npm start chưa nhé!'
         });
-
-        // Khôi phục trạng thái nút nếu lỗi
-        btn.disabled = false;
-        btn.innerText = "THANH TOÁN NGAY";
     }
 }
 
-/**
- * 3. Khởi chạy khi nạp trang
- */
 document.addEventListener('DOMContentLoaded', () => {
     renderOrderSummary();
-
     const btn = document.getElementById('btn-place-order');
-    if (btn) {
-        // Sử dụng onclick để đảm bảo chỉ có duy nhất 1 sự kiện đặt hàng được đăng ký
-        btn.onclick = placeOrder;
-    }
+    if (btn) btn.onclick = placeOrder;
 });
