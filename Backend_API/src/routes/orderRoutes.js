@@ -1,23 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { getAllOrders, updateOrderStatus } = require('../controllers/orderController');
-const Order = require('../models/Order');
 
-// Đặt hàng
-router.post('/place-order', async (req, res) => {
-    try {
-        const newOrder = new Order(req.body);
-        const savedOrder = await newOrder.save();
-        res.status(201).json({ message: "Đặt món thành công!", order: savedOrder });
-    } catch (error) {
-        res.status(400).json({ message: "Lỗi khi đặt món", error: error.message });
-    }
-});
+const {
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrderStatus,
+  deleteOrder,
+} = require("../controllers/orderController");
 
-// Lấy tất cả đơn
-router.get('/', getAllOrders);
+router.post("/", createOrder);
+router.get("/", getOrders);
+router.get("/:id", getOrderById);
 
-// Cập nhật trạng thái
-router.patch('/:id', updateOrderStatus);
+router.put("/:id/status", updateOrderStatus);
+router.delete("/:id", deleteOrder);
 
 module.exports = router;

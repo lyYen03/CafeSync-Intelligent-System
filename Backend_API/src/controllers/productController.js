@@ -1,24 +1,43 @@
 const Product = require('../models/Product');
 
-// GET all products
+// GET /api/products
 const getProducts = async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const { category } = req.query;
+
+    let filter = {};
+
+    // nếu có category thì lọc
+    if (category) {
+      filter.category = category;
     }
+
+    const products = await Product.find(filter);
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 // POST create product
+
+// POST /products
 const createProduct = async (req, res) => {
-    try {
-        const newProduct = new Product(req.body);
-        const saved = await newProduct.save();
-        res.status(201).json(saved);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+  try {
+    const data = req.body;
+
+    if (Array.isArray(data)) {
+      const products = await Product.insertMany(data);
+      return res.status(201).json(products);
+    } else {
+      const product = new Product(data);
+      await product.save();
+      return res.status(201).json(product);
     }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const updateProduct = async (req, res) => {

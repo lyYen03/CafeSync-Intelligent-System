@@ -9,10 +9,11 @@ const {
 } = require('../controllers/productController');
 
 const upload = require('../config/upload');
-// upload ảnh
-router.post('/upload', upload.single('image'), (req, res) => {
+// upload nhiều ảnh
+router.post('/upload', upload.array('images', 10), (req, res) => {
+    const imageUrls = req.files.map(file => `/images/${file.filename}`);
     res.json({
-        imageUrl: `/images/${req.file.filename}`
+        imageUrls
     });
 });
 // GET tất cả sản phẩm
