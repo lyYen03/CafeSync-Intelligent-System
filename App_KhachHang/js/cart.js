@@ -32,9 +32,10 @@ function renderCart() {
 
         let displayPrice = (priceNum || 0).toLocaleString('vi-VN') + 'đ';
 
+        // Tìm dòng imagePath trong cart.js và sửa lại:
         const imagePath = (item.image && item.image.startsWith('http'))
             ? item.image
-            : `/images/${item.image}`;
+            : `http://localhost:5000/images/${item.image}`; // Thêm localhost:5000 vào đây
 
         let optionText = "";
         if (item.options) {
