@@ -28,7 +28,11 @@ function displayProducts(products) {
     }
 
     productContainer.innerHTML = products.map(p => {
-        const imagePath = p.image.startsWith('http') ? p.image : `/images/${p.image}`;
+        // DÒNG CŨ CỦA YẾN:
+        // const imagePath = p.image.startsWith('http') ? p.image : `/images/${p.image}`;
+
+        // DÒNG MỚI (Yến hãy dán đè lên):
+        const imagePath = p.image.startsWith('http') ? p.image : `http://localhost:5000/images/${p.image}`;
         return `
             <div class="col-6 col-md-4 col-lg-3 mb-3 animate__animated animate__fadeIn">
                 <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
