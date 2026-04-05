@@ -1,31 +1,31 @@
-# ☕ CaféSync - Intelligent System
-**Đề tài:** Hệ thống quản lý quán cà phê tối ưu vận hành và cá nhân hóa trải nghiệm khách hàng.
+# ☕ CaféSync - Intelligent F&B Ecosystem
+**Đề tài:** Hệ thống quản lý và cá nhân hóa trải nghiệm khách hàng tối ưu vận hành.
 
 ## 📖 Giới thiệu dự án
-Dự án **CaféSync** được xây dựng nhằm hiện đại hóa mô hình F&B truyền thống, tập trung vào việc tối ưu hóa quy trình vận hành cho chủ quán và tạo ra trải nghiệm gọi món mang tính cá nhân hóa cao cho khách hàng thông qua trí tuệ nhân tạo.
+**CaféSync** là một hệ sinh thái F&B hiện đại được xây dựng trên nền tảng **MERN Stack**. Dự án xóa bỏ khoảng cách giữa khách hàng và quản lý thông qua trải nghiệm **Premium Soft UI** và trợ lý ảo **Syncie AI**, giúp vận hành quán cà phê trở nên thông minh và tự động hóa.
 
 ## 🚀 Công nghệ & Kỹ thuật trọng tâm
-Dự án ứng dụng các công nghệ tiên tiến để giải quyết bài toán thực tế:
-* **Prompt Engineering:** Kỹ thuật thiết kế câu lệnh tối ưu để xây dựng Trợ lý ảo AI tư vấn đồ uống chuyên sâu, am hiểu tâm lý và thực đơn của quán.
-* **Recommendation System:** Thuật toán gợi ý sản phẩm thông minh dựa trên hành vi và sở thích cá nhân của khách hàng.
-* **Real-time Communication (Socket.io):** Đảm bảo luồng dữ liệu giữa Khách hàng và Admin được cập nhật tức thời (đơn hàng mới, trạng thái món ăn) mà không cần tải lại trang.
-* **NoSQL (MongoDB):** Quản lý cơ sở dữ liệu linh hoạt, hỗ trợ truy xuất nhanh và mở rộng cấu trúc sản phẩm dễ dàng.
-* **Frontend & UI/UX:** HTML5, CSS3, JavaScript (ES6+), Bootstrap 5 (Mobile-first design).
+Dự án ứng dụng các công nghệ hiện đại nhất để giải quyết bài toán thực tế:
+* **MERN Stack:** Sự kết hợp sức mạnh giữa MongoDB, Express.js, React.js và Node.js.
+* **Prompt Engineering (Syncie AI):** Kỹ thuật thiết kế câu lệnh chuyên sâu trên nền tảng **Groq Cloud (Llama 3.1)** giúp trợ lý ảo am hiểu thực đơn và tư vấn khách hàng.
+* **Premium UI/UX:** Ngôn ngữ thiết kế **Soft UI & Glassmorphism**, tối ưu hóa trải nghiệm chạm trên thiết bị di động (Mobile-first).
+* **Real-time State Management:** Quản lý giỏ hàng, danh sách yêu thích (Favorites) và trạng thái đơn hàng thời gian thực.
+* **RESTful API & Security:** Hệ thống API bảo mật với JWT (JSON Web Token), phân quyền rõ ràng giữa Khách hàng, Nhân viên và Quản lý.
 
-## 📂 Phân hệ hệ thống
-* `📁 App_KhachHang/`: Web App di động tích hợp AI Chatbot và hệ thống đặt món.
-* `📁 Web_Admin/`: Dashboard quản lý vận hành, đơn hàng và thống kê real-time.
-* `📁 Backend_API/`: Node.js & Express server xử lý logic và CSDL NoSQL.
+## 📂 Cấu trúc phân hệ (Monorepo)
+* `📁 frontend-client/`: App React dành cho khách hàng (Order, Syncie AI, Tracking).
+* `📁 frontend-admin/`: Dashboard React quản lý vận hành (POS, Inventory, Reports).
+* `📁 Backend_API/`: Node.js Server trung tâm xử lý logic và Cơ sở dữ liệu MongoDB.
 
-## 👥 Đội ngũ phát triển
-Dự án được thực hiện bởi nhóm sinh viên chuyên ngành **Hệ thống Thông tin - Đại học Công nghiệp TP.HCM (IUH)**:
+## 👥 Đội ngũ phát triển (Fullstack Team)
+Dự án được thực hiện bởi nhóm sinh viên chuyên ngành **Hệ thống Thông tin - IUH**:
 
-1. **Lý Thị Yến** 
-   * *Vai trò:* Frontend Developer & UI/UX Designer.
-   * *Phụ trách:* Phát triển trải nghiệm người dùng trên phân hệ `App_KhachHang`.
-2. **Tài** 
-   * *Vai trò:* Backend Developer & Admin Frontend.
-   * *Phụ trách:* Xây dựng API, quản trị CSDL và phát triển phân hệ `Web_Admin`.
+1. **Lý Thị Yến** (Fullstack Developer)
+   * *Trọng tâm:* Phát triển toàn diện phân hệ **Client** (React). 
+   * *Kỹ thuật:* Xây dựng giao diện Premium, logic Giỏ hàng/Yêu thích, tích hợp Syncie AI và tối ưu hóa trải nghiệm khách hàng.
+2. **Nguyễn Văn Tài** (Fullstack Developer)
+   * *Trọng tâm:* Phát triển toàn diện phân hệ **Admin** & **Backend API**.
+   * *Kỹ thuật:* Xây dựng hệ thống quản trị, kiến trúc Server, quản lý Database và các API nghiệp vụ POS.
 
 ---
 *© 2026 CaféSync Project - Industrial University of Ho Chi Minh City.*
