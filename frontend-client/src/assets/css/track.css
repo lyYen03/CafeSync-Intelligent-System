@@ -1,0 +1,127 @@
+:root {
+    --cafe-nude: #FDF3E7;
+    --cafe-brown: #A47551;
+}
+
+.track-page {
+    background-color: var(--cafe-nude);
+}
+
+.btn-back-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    color: var(--cafe-brown);
+}
+
+.card-premium {
+    background: white;
+    border-radius: 30px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(164, 117, 81, 0.08);
+}
+
+/* Progress Bar Custom */
+.progress-track-container {
+    padding: 0 10px;
+    position: relative;
+}
+
+.track-line {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #f0f0f0;
+    z-index: 0;
+}
+
+.track-line-fill {
+    height: 100%;
+    background: var(--cafe-brown);
+    transition: width 1s ease-in-out;
+}
+
+.track-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    color: #ccc;
+}
+
+.track-step.active {
+    color: var(--cafe-brown);
+}
+
+.step-blob {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border: 3px solid #f0f0f0;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    transition: 0.3s;
+}
+
+.track-step.active .step-blob {
+    border-color: var(--cafe-brown);
+    background: var(--cafe-nude);
+    box-shadow: 0 5px 15px rgba(164, 117, 81, 0.2);
+}
+
+.track-step span {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Item row */
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.item-name {
+    font-weight: 700;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.item-qty {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.total-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--cafe-brown);
+}
+
+/* Loading Animation */
+.spinner-coffee {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #eee;
+    border-top: 5px solid var(--cafe-brown);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,204 @@
+/* --- BIẾN MÀU SẮC CHUNG --- */
+:root {
+    --cafe-nude: #FDF3E7;     /* Nền kem */
+    --cafe-brown: #A47551;    /* Nâu chính */
+    --cafe-dark: #826644;     /* Nâu đậm */
+    --white-alpha: rgba(255, 255, 255, 0.2);
+}
+
+/* --- BỐ CỤC TỔNG THỂ --- */
+.auth-page-wrapper {
+    background-color: var(--cafe-nude);
+    min-height: 100vh;
+    display: flex;
+    align-items: center; /* Căn giữa trên Desktop */
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* NÚT QUAY LẠI ✨ */
+.auth-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 45px;
+    height: 45px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    color: var(--cafe-brown);
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.auth-back-btn:hover {
+    transform: scale(1.1);
+    background: var(--cafe-brown);
+    color: white;
+}
+
+/* CONTAINER CHÍNH */
+.auth-container {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(164, 117, 81, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+/* PHẦN ẢNH HEADER */
+.auth-header-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: 0.3s;
+}
+
+/* NỘI DUNG FORM */
+.auth-form-content {
+    background-color: var(--cafe-brown);
+    padding: 35px 30px;
+    color: white;
+    border-radius: 40px 40px 0 0;
+    margin-top: -40px;
+    position: relative;
+    flex-grow: 1;
+}
+
+/* TAB ĐĂNG NHẬP / ĐĂNG KÝ */
+.auth-tabs-nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 25px;
+    border: none;
+}
+
+.auth-tabs-nav .nav-link {
+    color: rgba(255, 255, 255, 0.6) !important;
+    background: transparent !important;
+    border: none !important;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding-bottom: 5px;
+    position: relative;
+}
+
+.auth-tabs-nav .nav-link.active {
+    color: white !important;
+}
+
+.auth-tabs-nav .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    border-radius: 2px;
+}
+
+/* INPUT SOFT UI */
+.auth-input-group {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.auth-input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+}
+
+.auth-form-control {
+    width: 100%;
+    background-color: var(--white-alpha) !important;
+    border: none !important;
+    border-radius: 18px;
+    padding: 14px 15px 14px 45px !important;
+    color: white !important;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.auth-form-control:focus {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    outline: none;
+}
+
+/* NÚT BẤM NỔI KHỐI (NEUMORPHISM) ✨ */
+.btn-auth-soft {
+    background-color: var(--cafe-nude) !important;
+    color: var(--cafe-brown) !important;
+    border: none !important;
+    border-radius: 50px;
+    padding: 15px;
+    width: 100%;
+    font-weight: 800;
+    font-size: 1rem;
+    margin-top: 10px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+}
+
+.btn-auth-soft:active {
+    transform: scale(0.98);
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+}
+
+/* SOCIAL ICONS */
+.auth-social-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.auth-social-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--white-alpha);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* --- RESPONSIVE CHO ĐIỆN THOẠI 📱 --- */
+@media (max-width: 576px) {
+    .auth-page-wrapper {
+        align-items: flex-start;
+    }
+
+    .auth-container {
+        max-width: 100%;
+        border-radius: 0; /* Tràn màn hình */
+        min-height: 100vh;
+    }
+
+    .auth-header-img {
+        height: 35vh; /* Ảnh chiếm 35% chiều cao */
+    }
+
+    .auth-form-content {
+        border-radius: 40px 40px 0 0;
+        margin-top: -40px;
+        padding-bottom: 60px; /* Bù chỗ cho nút Home mobile */
+    }
+}

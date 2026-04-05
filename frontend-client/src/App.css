@@ -1,0 +1,36 @@
+/* CaféSync - Reset CSS để nhường sân cho Premium Style */
+
+:root {
+  /* Font chữ chuẩn cho hệ thống F&B hiện đại */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #FDF3E7; /* Màu nền kem của quán */
+  color: #5e482f;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /* Quan trọng: display: block để Bootstrap dàn trang đúng 2 cột trên mobile */
+  display: block !important; 
+}
+
+#root {
+  /* Xóa bỏ giới hạn 1126px của Vite để web bung lụa toàn màn hình */
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important; /* Để tên món ăn canh trái tinh tế */
+}
+
+/* Reset các hiệu ứng hover tím của Vite cũ để không bị xung đột */
+button, a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Ẩn các class counter/hero/ticks không dùng đến của Vite */
+.counter, .hero, .ticks, #spacer {
+  display: none !important;
+}
