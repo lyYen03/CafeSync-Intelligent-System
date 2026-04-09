@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, Typography, Tag, Button, Modal, Select, message, Popconfirm } from "antd";
+import { Table, Typography, Tag, Button, Modal, Select, message, Popconfirm, Input } from "antd";
 import axios from "axios";
 
 const { Title } = Typography;
@@ -21,6 +21,12 @@ const OrderManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [editingOrder, setEditingOrder] = useState(null);
   const [status, setStatus] = useState("");
+  const [searchText, setSearchText] = useState("");
+
+  const filteredOrders = orders.filter((order) => {
+    if (!searchText) return true;
+    return order.orderID && order.orderID.toLowerCase().includes(searchText.toLowerCase().trim());
+  });
 
   // Load orders
   const fetchOrders = () => {
@@ -72,22 +78,48 @@ const OrderManagementPage = () => {
       dataIndex: "items",
       key: "items",
       render: (items) => (
-        <ul style={{ paddingLeft: 16 }}>
+        <ul style={{ paddingLeft: 16, margin: 0 }}>
           {items.map((item, idx) => (
-            <li key={idx}>
-              {item.name} x{item.quantity} ({item.price.toLocaleString("vi-VN")}đ)
-              {item.options && (
-                <span style={{ color: "#888", fontSize: 12 }}>
-                  {item.options.size ? `, Size: ${item.options.size}` : ""}
-                  {item.options.sugar ? `, Đường: ${item.options.sugar}` : ""}
-                  {item.options.ice ? `, Đá: ${item.options.ice}` : ""}
+            <li key={idx} style={{ marginBottom: 12, listStyle: "disc" }}>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>
+                {item.name} <span style={{ fontWeight: 400 }}>x{item.quantity}</span>
+                <span style={{ color: "#16a34a", marginLeft: 8 }}>
+                  ({item.price.toLocaleString("vi-VN")}đ)
                 </span>
-              )}
-              {item.note && <span style={{ color: "#888", fontSize: 12 }}> - {item.note}</span>}
+              </div>
+              <div style={{ color: "#555", fontSize: 13, marginLeft: 8, lineHeight: 1.7 }}>
+                {item.options?.size && <span><b>Size:</b> {item.options.size} &nbsp; </span>}
+                {item.options?.sugar && <span><b>Đường:</b> {item.options.sugar} &nbsp; </span>}
+                {item.options?.ice && <span><b>Đá:</b> {item.options.ice} &nbsp; </span>}
+                {item.options?.toppings && item.options.toppings.length > 0 && (
+                  <span>
+                    <b>Topping:</b> {item.options.toppings.join(", ")} &nbsp;
+                  </span>
+                )}
+                {item.note && (
+                  <span>
+                    <b>Ghi chú:</b> {item.note}
+                  </span>
+                )}
+              </div>
             </li>
           ))}
         </ul>
-      ),
+      )
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (v) => {
+        const d = new Date(v);
+        return (
+          <span>
+            {d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}{" "}
+            {d.toLocaleDateString("vi-VN")}
+          </span>
+        );
+      }
     },
     {
       title: "Tổng tiền",
@@ -99,20 +131,16 @@ const OrderManagementPage = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => <Tag color={statusColors[status] || "default"}>{status}</Tag>,
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (v) => new Date(v).toLocaleString(),
+      render: (status) => (
+        <Tag color={statusColors[status] || "default"}>{status}</Tag>
+      ),
     },
     {
       title: "Thao tác",
       key: "actions",
       render: (_, record) => (
-        <>
-          <Button size="small" onClick={() => openStatusModal(record)} style={{ marginRight: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Button size="small" onClick={() => openStatusModal(record)}>
             Đổi trạng thái
           </Button>
           <Popconfirm
@@ -123,16 +151,25 @@ const OrderManagementPage = () => {
           >
             <Button size="small" danger>Xóa</Button>
           </Popconfirm>
-        </>
+        </div>
       ),
     },
+    
   ];
 
   return (
     <div>
-      <Title level={3}>🧾 Quản lý Đơn hàng</Title>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <Title level={3} style={{ margin: 0 }}>🧾 Quản lý Đơn hàng</Title>
+        <Input.Search
+          placeholder="Tìm kiếm theo mã đơn..."
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
       <Table
-        dataSource={orders}
+        dataSource={filteredOrders}
         columns={columns}
         rowKey="_id"
         loading={loading}

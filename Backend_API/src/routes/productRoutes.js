@@ -11,7 +11,7 @@ const {
 const upload = require('../config/upload');
 // upload nhiều ảnh
 router.post('/upload', upload.array('images', 10), (req, res) => {
-    const imageUrls = req.files.map(file => `/images/${file.filename}`);
+    const imageUrls = req.files.map(file => file.filename); // chỉ lấy tên file
     res.json({
         imageUrls
     });

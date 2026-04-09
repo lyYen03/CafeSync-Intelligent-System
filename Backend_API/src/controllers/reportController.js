@@ -1,5 +1,9 @@
 const Order = require("../models/Order");
 
+function formatVNDate(date) {
+  const vn = new Date(date.getTime() + 7 * 60 * 60 * 1000); // +7h
+  return vn.toISOString().split("T")[0];
+}
 
 // 💰 1. Tổng doanh thu
 const getTotalRevenue = async (req, res) => {
@@ -20,11 +24,14 @@ const getTotalRevenue = async (req, res) => {
 // 📅 2. Doanh thu hôm nay
 const getTodayRevenue = async (req, res) => {
   try {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date();
-    end.setHours(23, 59, 59, 999);
+    // Lấy ngày hôm nay theo giờ Việt Nam
+    const now = new Date();
+    const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const start = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate(), 0, 0, 0);
+    const end = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate(), 23, 59, 59, 999);
+    // Đổi về UTC để so sánh với Mongo
+    start.setHours(start.getHours() - 7);
+    end.setHours(end.getHours() - 7);
 
     const orders = await Order.find({
       status: "Hoàn thành",
@@ -83,7 +90,7 @@ const getRevenueByDay = async (req, res) => {
       const total = orders.reduce((sum, o) => sum + o.totalPrice, 0);
 
       result.push({
-        date: start.toISOString().split("T")[0],
+        date: formatVNDate(start),
         revenue: total,
       });
     }

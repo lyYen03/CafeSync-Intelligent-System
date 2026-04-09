@@ -4,12 +4,26 @@ import axios from "axios";
 
 const { Title } = Typography;
 
+const removeAccents = (str) => {
+  if (!str) return "";
+  str = str.toLowerCase();
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  return str;
+};
+
 const IngredientManagementPage = () => {
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
 
   // Load ingredients
   const fetchIngredients = () => {
@@ -88,16 +102,32 @@ const IngredientManagementPage = () => {
       ),
     },
   ];
-
+  const filteredIngredients = ingredients.filter((item) => {
+    const itemName = removeAccents(item.name);
+    const searchKeyword = removeAccents(searchText).trim();
+    return itemName.includes(searchKeyword);
+  });
   return (
     <div>
       <Title level={3}>📦 Quản lý kho nguyên liệu</Title>
-      <Button type="primary" style={{ marginBottom: 16 }} onClick={() => openModal()}>Thêm nguyên liệu</Button>
+
+      {/* 2 Nút thêm và tìm kiếm nằm ngang hàng */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <Button type="primary" onClick={() => openModal()}>
+          Thêm nguyên liệu
+        </Button>
+        <Input.Search
+          placeholder="Tìm kiếm nguyên liệu..."
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
       {loading ? (
         <Spin />
       ) : (
         <Table
-          dataSource={ingredients}
+          dataSource={filteredIngredients} // Nạp dữ liệu ĐÃ QUA BỘ LỌC vào đây
           columns={columns}
           rowKey="_id"
           pagination={{ pageSize: 8 }}

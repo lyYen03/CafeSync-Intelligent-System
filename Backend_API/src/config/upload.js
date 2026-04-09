@@ -6,7 +6,12 @@ const storage = multer.diskStorage({
         cb(null, 'public/images');
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        // Lưu tên gốc + timestamp để tránh trùng
+        const ext = path.extname(file.originalname);
+        const baseName = path.basename(file.originalname, ext);
+        cb(null, `${baseName}-${Date.now()}${ext}`);
+        // Nếu muốn giữ nguyên tên gốc (có thể bị trùng):
+        // cb(null, file.originalname);
     }
 });
 

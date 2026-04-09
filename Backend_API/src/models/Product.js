@@ -1,3 +1,18 @@
+// const mongoose = require("mongoose");
+
+// const ProductSchema = new mongoose.Schema({
+//   name: String,
+//   price: Number,
+//   category: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "Category" // 👈 liên kết
+//   },
+//   image: String,
+//   description: String
+// });
+
+// module.exports = mongoose.model("Product", ProductSchema);
+
 const mongoose = require("mongoose");
 
 const ProductSchema = new mongoose.Schema({
@@ -5,10 +20,14 @@ const ProductSchema = new mongoose.Schema({
   price: Number,
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Category" // 👈 liên kết
+    ref: "Category"
   },
   image: String,
-  description: String
+  description: String,
+  sizes: [String],           // ["S", "M", "L"]
+  toppings: [String],        // ["Trân châu", "Thạch", ...]
+  sugarOptions: [String],    // ["0%", "30%", "50%", "70%", "100%"]
+  iceOptions: [String]       // ["0%", "30%", "50%", "70%", "100%"]
 });
 
 module.exports = mongoose.model("Product", ProductSchema);

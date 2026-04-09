@@ -1,5 +1,6 @@
-import { Layout, Avatar, Dropdown, Space, Typography } from "antd";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import { Layout, Avatar, Dropdown, Space, Typography, Modal, Button, Descriptions } from "antd";
+import { UserOutlined, LogoutOutlined, IdcardOutlined, EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Header: AntHeader } = Layout;
@@ -8,19 +9,28 @@ const { Text } = Typography;
 const Header = () => {
   const navigate = useNavigate();
 
-  // 👉 Lấy tên admin từ localStorage (nếu có)
-  const adminName = localStorage.getItem("adminName") || "Admin";
+  // 👉 Lấy thông tin user từ localStorage
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userName = user?.name || user?.username || "Admin";
 
   // 👉 Logout handler
   const handleLogout = () => {
-    localStorage.removeItem("adminId");
-    localStorage.removeItem("adminName");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
+  const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+
   // 👉 Dropdown menu (AntD v5)
   const items = [
-    
+    {
+      key: "profile",
+      icon: <IdcardOutlined />,
+      label: "Thông tin cá nhân",
+      onClick: () => setIsProfileModalVisible(true),
+    },
     {
       type: "divider",
     },
@@ -72,9 +82,46 @@ const Header = () => {
             icon={<UserOutlined />}
             style={{ backgroundColor: "#1677ff" }}
           />
-          <Text>{adminName}</Text>
+          <Text>{userName}</Text>
         </Space>
       </Dropdown>
+
+      {/* 🔥 Modal Thông tin cá nhân */}
+      <Modal
+        title="Thông tin cá nhân"
+        open={isProfileModalVisible}
+        onCancel={() => setIsProfileModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setIsProfileModalVisible(false)}>
+            Đóng
+          </Button>,
+          <Button 
+            key="edit" 
+            type="primary" 
+            icon={<EditOutlined />} 
+            onClick={() => {
+              setIsProfileModalVisible(false);
+              navigate("/profile");
+            }}
+          >
+            Chỉnh sửa
+          </Button>,
+        ]}
+      >
+        {user ? (
+          <Descriptions column={1} bordered size="small" style={{ marginTop: 16 }}>
+            <Descriptions.Item label="Họ và tên">{user.name}</Descriptions.Item>
+            <Descriptions.Item label="Tên đăng nhập">{user.username}</Descriptions.Item>
+            <Descriptions.Item label="Vai trò">
+              <Typography.Text type="secondary">
+                {user.role === "admin" ? "Admin" : user.role === "nhanvien" ? "Nhân viên" : user.role}
+              </Typography.Text>
+            </Descriptions.Item>
+          </Descriptions>
+        ) : (
+          <Typography.Text>Không có thông tin</Typography.Text>
+        )}
+      </Modal>
     </AntHeader>
   );
 };

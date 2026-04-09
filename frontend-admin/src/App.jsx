@@ -10,6 +10,7 @@ import IngredientManagementPage from "./pages/IngredientManagementPage";
 import OrderManagementPage from "./pages/OrderManagementPage";
 import RevenueReportPage from "./pages/RevenueReportPage";
 import POSPage from "./pages/POSPage"; // 👈 Import trang POS mới của Yến
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
                   <Route path="/" element={<WelcomePage />} />
                   <Route path="/orders" element={<OrderManagementPage />} />
                   <Route path="/pos" element={<POSPage />} /> {/* 👈 Route cho Nhân viên/POS */}
+                  <Route path="/profile" element={<ProfilePage />} />
 
                   {/* --- CHỨC NĂNG CHỈ ADMIN (Có thể bọc thêm logic nếu muốn) --- */}
                   <Route path="/CategoryPage" element={<CategoryPage />} />

@@ -10,7 +10,8 @@ import {
   message,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-
+import { getCategories } from "../api/categoryApi";
+import { Select } from "antd";
 import {
   getProducts,
   createProduct,
@@ -19,12 +20,27 @@ import {
   uploadImages,
 } from "../api/productApi";
 
+const removeAccents = (str) => {
+  if (!str) return "";
+  str = str.toLowerCase();
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  return str;
+};
+
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [searchText, setSearchText] = useState("");
 
   // LOAD DATA
   const fetchData = async () => {
@@ -34,6 +50,7 @@ const ProductPage = () => {
 
   useEffect(() => {
     fetchData();
+    getCategories().then(res => setCategories(Array.isArray(res) ? res : []));
   }, []);
 
   // OPEN MODAL
@@ -42,7 +59,10 @@ const ProductPage = () => {
     setOpen(true);
 
     if (item) {
-      form.setFieldsValue(item);
+      form.setFieldsValue({
+        ...item,
+        category: item.category?._id || item.category // lấy _id nếu là object, còn không thì lấy luôn
+      });
     } else {
       form.resetFields();
       setFileList([]);
@@ -90,9 +110,17 @@ const ProductPage = () => {
 
   // DELETE
   const handleDelete = async (id) => {
-    await deleteProduct(id);
-    message.success("Xóa thành công");
-    fetchData();
+    Modal.confirm({
+      title: "Bạn có chắc muốn xóa món này?",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        await deleteProduct(id);
+        message.success("Xóa thành công");
+        fetchData();
+      },
+    });
   };
 
   const columns = [
@@ -108,7 +136,11 @@ const ProductPage = () => {
     },
     { title: "Tên món", dataIndex: "name" },
     { title: "Giá", dataIndex: "price" },
-    { title: "Danh mục", dataIndex: "category" },
+    {
+      title: "Danh mục",
+      dataIndex: "category",
+      render: (cat) => cat?.name || ""
+    },
     {
       title: "Thao tác",
       render: (_, record) => (
@@ -121,21 +153,32 @@ const ProductPage = () => {
       ),
     },
   ];
+  const filteredProducts = products.filter((product) => {
+    const productName = removeAccents(product.name);
+    const searchKeyword = removeAccents(searchText).trim();
+    return productName.includes(searchKeyword);
+  });
 
   return (
     <div>
       <h2>☕ Quản lý món uống</h2>
 
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => openModal()}
-        style={{ marginBottom: 16 }}
-      >
-        Thêm món
-      </Button>
-
-      <Table rowKey="_id" dataSource={products} columns={columns} />
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => openModal()}
+        >
+          Thêm món
+        </Button>
+        <Input.Search
+          placeholder="Tìm kiếm món theo tên..."
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table rowKey="_id" dataSource={filteredProducts} columns={columns} />
 
       {/* MODAL */}
       <Modal
@@ -161,8 +204,76 @@ const ProductPage = () => {
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item name="category" label="Danh mục">
-            <Input />
+          <Form.Item
+            name="category"
+            label="Danh mục"
+            rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+          >
+            <Select
+              placeholder="Chọn danh mục"
+              options={categories.map(cat => ({
+                label: cat.name,
+                value: cat._id
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item name="sizes" label="Size">
+            <Select
+              mode="tags"
+              style={{ width: '100%' }}
+              placeholder="Nhập hoặc chọn size, ví dụ: S, M, L"
+              options={[
+                { label: "S", value: "S" },
+                { label: "M", value: "M" },
+                { label: "L", value: "L" }
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item name="toppings" label="Topping">
+            <Select
+              mode="tags"
+              style={{ width: '100%' }}
+              placeholder="Nhập hoặc chọn topping"
+              options={[
+                { label: "Trân châu", value: "Trân châu" },
+                { label: "Sữa", value: "Sữa" },
+                { label: "Thạch", value: "Thạch" },
+                { label: "Pudding", value: "Pudding" },
+                { label: "Kem cheese", value: "Kem cheese" }
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item name="sugarOptions" label="Mức đường">
+            <Select
+              mode="tags"
+              style={{ width: '100%' }}
+              placeholder="Nhập hoặc chọn mức đường"
+              options={[
+                { label: "0%", value: "0%" },
+                { label: "30%", value: "30%" },
+                { label: "50%", value: "50%" },
+                { label: "70%", value: "70%" },
+                { label: "100%", value: "100%" }
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item name="iceOptions" label="Mức đá">
+            <Select
+              mode="tags"
+              style={{ width: '100%' }}
+              placeholder="Nhập hoặc chọn mức đá"
+              options={[
+                { label: "0%", value: "0%" },
+                { label: "30%", value: "30%" },
+                { label: "50%", value: "50%" },
+                { label: "70%", value: "70%" },
+                { label: "100%", value: "100%" }
+              ]}
+            />
           </Form.Item>
 
           {/* UPLOAD */}
