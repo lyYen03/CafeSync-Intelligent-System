@@ -140,3 +140,35 @@ app.listen(PORT, () => {
     ----------------------------------------------
     `);
 });
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const Product = require('./src/models/Product');
+        const product = await Product.findById(req.params.id);
+
+        if (!product) {
+            return res.status(404).json({ message: "Món này không tồn tại Yến ơi!" });
+        }
+
+        res.json(product);
+    } catch (error) {
+        console.error("Lỗi lấy chi tiết:", error);
+        res.status(500).json({ message: "ID không hợp lệ hoặc lỗi Server." });
+    }
+});
+// Endpoint nhận tín hiệu thanh toán thành công từ PayOS
+app.post("/api/payment/webhook", async (req, res) => {
+    const { data, code } = req.body;
+    if (code === "00") { // Thanh toán thành công
+        try {
+            const Order = require('./src/models/Order');
+            await Order.findOneAndUpdate(
+                { orderID: `CFS${data.orderCode}` },
+                { status: "Chờ xác nhận" } // Đã trả tiền, giờ đợi quán gật đầu là làm món
+            );
+            console.log(`💰 Tiền đã về cho đơn CFS${data.orderCode}. Đang đợi nhân viên duyệt.`);
+        } catch (err) {
+            console.error("Lỗi cập nhật Webhook:", err);
+        }
+    }
+    res.json({ message: "Ok" });
+});

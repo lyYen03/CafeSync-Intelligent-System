@@ -16,10 +16,10 @@ const Home = ({ cartCount }) => {
     const API_URL = "http://localhost:5000";
 
     const categoryMap = {
-        "Cà Phê": "69ce82f2e29634cdd7933bfe",
+        "Cà Phê": "69d362f64faad13bdcfb2de2",
         "Sinh tố": "69ce855ce29634cdd7933c0b",
-        "Nước ép": "69ce8560e29634cdd7933c0d",
-        "Trà": "69ce856be29634cdd7933c0f"
+        "Trà": "69ce856be29634cdd7933c0f",
+        "Nước ép": "69ce8560e29634cdd7933c0d"
     };
 
     const handleLogout = () => {

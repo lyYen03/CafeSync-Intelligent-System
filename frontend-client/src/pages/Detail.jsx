@@ -1,127 +1,147 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../assets/css/style.css';
+import '../assets/css/detail.css';
 
 const Detail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const API_URL = "http://localhost:5000";
 
-    // 1. Khai báo State (Thay cho DOM elements)
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
-    const [options, setOptions] = useState({ size: 'M', sugar: '100%', ice: '100%' });
+    const [options, setOptions] = useState({ size: 'M', sugar: '100%', ice: '100%', toppings: [] });
     const [note, setNote] = useState("");
-    const [isScrolled, setIsScrolled] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
 
-    // 2. Lấy dữ liệu sản phẩm từ API
+    const updateCartCount = () => {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+    };
+
     useEffect(() => {
         axios.get(`${API_URL}/api/products/${id}`)
-            .then(res => setProduct(res.data))
-            .catch(err => console.error("Lỗi lấy chi tiết món:", err));
-
-        // Hiệu ứng đổi màu header khi cuộn
-        const handleScroll = () => setIsScrolled(window.scrollY > 50);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+            .then(res => {
+                const data = res.data;
+                setProduct(data);
+                setOptions({
+                    size: data.sizes?.[1] || data.sizes?.[0] || 'M',
+                    sugar: data.sugarOptions?.[data.sugarOptions.length - 1] || '100%',
+                    ice: data.iceOptions?.[data.iceOptions.length - 1] || '100%',
+                    toppings: []
+                });
+            })
+            .catch(err => console.error(err));
+        updateCartCount();
     }, [id]);
 
-    if (!product) return <div className="text-center py-5">Đang pha chế... ☕</div>;
+    if (!product) return <div className="loading-state">☕ Đang pha chế...</div>;
 
-    // 3. Tính toán giá tiền theo Size
     const getExtraPrice = () => {
         if (options.size === 'S') return 0;
-        if (options.size === 'M') return 5000;
         if (options.size === 'L') return 10000;
-        return 0;
+        return 5000;
     };
+
     const totalPrice = (product.price + getExtraPrice()) * quantity;
 
-    // 4. Logic Thêm vào giỏ hàng
+    const handleToppingToggle = (t) => {
+        const current = [...options.toppings];
+        const idx = current.indexOf(t);
+        idx > -1 ? current.splice(idx, 1) : current.push(t);
+        setOptions({ ...options, toppings: current });
+    };
+
     const handleAddToCart = () => {
         const newItem = {
-            id: product._id,
-            name: product.name,
-            price: product.price + getExtraPrice(),
-            image: product.image,
-            quantity: quantity,
-            options: options,
-            note: note
+            _id: product._id,
+            name: product.name, price: product.price + getExtraPrice(),
+            image: product.image, quantity, options, note
         };
-
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        // Kiểm tra trùng lặp (cùng tên + cùng options)
-        const existingIndex = cart.findIndex(item =>
-            item.id === newItem.id && JSON.stringify(item.options) === JSON.stringify(newItem.options)
-        );
-
-        if (existingIndex > -1) {
-            cart[existingIndex].quantity += newItem.quantity;
-        } else {
-            cart.push(newItem);
-        }
-
+        const existIdx = cart.findIndex(i => i._id === newItem._id && JSON.stringify(i.options) === JSON.stringify(newItem.options));
+        existIdx > -1 ? cart[existIdx].quantity += quantity : cart.push(newItem);
         localStorage.setItem('cart', JSON.stringify(cart));
-        window.dispatchEvent(new Event('cartUpdated')); // Báo hiệu cho App.jsx cập nhật Badge
-
-        alert(`Đã thêm ${quantity} ${product.name} vào giỏ hàng!`);
-        navigate('/');
+        window.dispatchEvent(new Event('cartUpdated'));
+        updateCartCount();
+        alert(`Đã thêm ${product.name} vào giỏ hàng! ✨`);
     };
 
     return (
-        <div className="detail-page pb-5">
-            {/* Header Nổi (Thay cho fixed-top-action) */}
-            <div className={`fixed-top p-3 transition ${isScrolled ? 'bg-white shadow-sm' : 'bg-transparent'}`}>
-                <div className="container d-flex justify-content-between">
-                    <button className="btn bg-white shadow-sm rounded-circle" onClick={() => navigate(-1)}>
-                        <i className="bi bi-chevron-left"></i>
-                    </button>
-                    <button className="btn bg-white shadow-sm rounded-circle">
-                        <i className="bi bi-share"></i>
-                    </button>
+        <div className="detail-page-premium">
+            <div className="top-nav-bar">
+                <button className="nav-icon-btn" onClick={() => navigate(-1)}><i className="bi bi-chevron-left"></i></button>
+                <span className="nav-title">Chi tiết món</span>
+                <button className="nav-icon-btn"><i className="bi bi-heart"></i></button>
+            </div>
+
+            <div className="hero-image-container">
+                <img src={`${API_URL}/images/${product.image}`} className="product-hero-image" alt={product.name} />
+            </div>
+
+            <div className="detail-content-sheet-full">
+                <h1 className="premium-item-name">{product.name}</h1>
+                <p className="premium-description">{product.description || "Hương vị cà phê đích thực."}</p>
+
+                <div className="option-section">
+                    <span className="premium-section-title">Kích cỡ ly</span>
+                    <div className="capsule-selector">
+                        {product.sizes?.map(s => (
+                            <div key={s} className={`flex-grow-1 capsule-item ${options.size === s ? 'active' : ''}`} onClick={() => setOptions({ ...options, size: s })}>{s}</div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="option-section mt-4">
+                    <span className="premium-section-title">Mức đường</span>
+                    <div className="capsule-selector-small">
+                        {product.sugarOptions?.map(opt => (
+                            <div key={opt} className={`capsule-item-small ${options.sugar === opt ? 'active' : ''}`} onClick={() => setOptions({ ...options, sugar: opt })}>{opt}</div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="option-section mt-4">
+                    <span className="premium-section-title">Mức đá</span>
+                    <div className="capsule-selector-small">
+                        {product.iceOptions?.map(opt => (
+                            <div key={opt} className={`capsule-item-small ${options.ice === opt ? 'active' : ''}`} onClick={() => setOptions({ ...options, ice: opt })}>{opt}</div>
+                        ))}
+                    </div>
+                </div>
+
+                {product.toppings?.length > 0 && (
+                    <div className="option-section mt-4">
+                        <span className="premium-section-title">Topping yêu thích</span>
+                        <div className="topping-capsule-group">
+                            {product.toppings.map(t => (
+                                <div key={t} className={`topping-capsule-item ${options.toppings.includes(t) ? 'active' : ''}`} onClick={() => handleToppingToggle(t)}>{t}</div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="option-section mt-4 mb-5">
+                    <span className="premium-section-title">Ghi chú cho quán</span>
+                    <textarea className="premium-note-input" rows="2" placeholder="Ví dụ: Ít đường, không lấy ống hút..." value={note} onChange={(e) => setNote(e.target.value)}></textarea>
                 </div>
             </div>
 
-            {/* Ảnh sản phẩm lớn tràn viền */}
-            <img src={`${API_URL}/images/${product.image}`} className="w-100 header-image"
-                style={{ height: '350px', objectFit: 'cover' }} alt={product.name} />
-
-            <div className="container mt-n4 position-relative bg-white rounded-top-5 p-4 shadow-sm" style={{ marginTop: '-30px' }}>
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h3 className="fw-bold item-name">{product.name}</h3>
-                    <h4 className="fw-bold text-umber" style={{ color: '#826644' }}>{totalPrice.toLocaleString()}đ</h4>
-                </div>
-                <p className="text-muted small mb-4">{product.description || "Hương vị đậm đà, đánh thức mọi giác quan tại CaféSync."}</p>
-
-                {/* LỰA CHỌN SIZE */}
-                <h6 className="fw-bold mb-3">Chọn Size</h6>
-                <div className="d-flex gap-3 mb-4">
-                    {['S', 'M', 'L'].map(s => (
-                        <div key={s} className={`flex-grow-1 p-2 border rounded-3 text-center cursor-pointer transition ${options.size === s ? 'border-dark bg-dark text-white' : 'bg-light'}`}
-                            onClick={() => setOptions({ ...options, size: s })}>
-                            <div className="fw-bold">{s}</div>
-                            <small>{s === 'S' ? 'Nhỏ' : s === 'M' ? 'Vừa' : 'Lớn'}</small>
-                        </div>
-                    ))}
-                </div>
-
-                {/* GHI CHÚ */}
-                <h6 className="fw-bold mb-2">Ghi chú</h6>
-                <textarea className="form-control border-0 bg-light rounded-4 p-3 mb-4"
-                    placeholder="Yêu cầu thêm cho quán (Ví dụ: ít đá, nhiều sữa...)"
-                    value={note} onChange={(e) => setNote(e.target.value)}></textarea>
-
-                {/* FOOTER ACTION */}
-                <div className="d-flex align-items-center gap-3">
-                    <div className="d-flex align-items-center bg-light rounded-pill p-1 border">
-                        <button className="btn border-0" onClick={() => quantity > 1 && setQuantity(quantity - 1)}><i className="bi bi-dash-circle fs-4"></i></button>
-                        <span className="mx-3 fw-bold fs-5">{quantity}</span>
-                        <button className="btn border-0" onClick={() => setQuantity(quantity + 1)}><i className="bi bi-plus-circle fs-4"></i></button>
+            <div className="premium-footer-container">
+                <div className="footer-price-row">
+                    <div className="premium-quantity-stepper">
+                        <button onClick={() => quantity > 1 && setQuantity(quantity - 1)}>−</button>
+                        <span className="quantity-num">{quantity}</span>
+                        <button onClick={() => setQuantity(quantity + 1)}>+</button>
                     </div>
-                    <button className="btn btn-dark flex-grow-1 py-3 rounded-pill fw-bold shadow-sm" onClick={handleAddToCart}>
-                        THÊM VÀO GIỎ - {totalPrice.toLocaleString()}đ
+                    <div className="final-price-display">{totalPrice.toLocaleString()}đ</div>
+                </div>
+                <div className="footer-button-row">
+                    <button className="bag-icon-btn position-relative" onClick={() => navigate('/cart')}>
+                        <i className="bi bi-bag-heart"></i>
+                        {cartCount > 0 && <span className="cart-badge-dot">{cartCount}</span>}
                     </button>
+                    <button className="btn-add-order-now" onClick={handleAddToCart}>Thêm vào giỏ</button>
                 </div>
             </div>
         </div>

@@ -60,3 +60,81 @@ body {
     font-size: 1.1rem;
     margin-top: 10px;
 }
+.border-bottom-dashed {
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.checkout-items-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom scrollbar cho danh sách món */
+.checkout-items-list::-webkit-scrollbar {
+    width: 4px;
+}
+.checkout-items-list::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+
+.bg-light-custom {
+    background-color: #f8f9fa;
+}
+.payment-method-card {
+    border: 2px solid #f3ece4;
+    border-radius: 20px;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    color: #a6948a;
+}
+
+.payment-method-card:hover {
+    border-color: #826644;
+    background: #fdfaf2;
+}
+
+.payment-method-card.active {
+    background: #5c4033;
+    color: white;
+    border-color: #5c4033;
+    box-shadow: 0 8px 20px rgba(92, 64, 51, 0.2);
+    transform: translateY(-5px);
+}
+
+.payment-method-card i {
+    margin-bottom: 5px;
+}
+
+.text-cafe {
+    color: #826644;
+    font-weight: 500;
+}
+.border-bottom-dashed {
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.checkout-items-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom scrollbar cho danh sách món */
+.checkout-items-list::-webkit-scrollbar {
+    width: 4px;
+}
+.checkout-items-list::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+
+.bg-light-custom {
+    background-color: #f8f9fa;
+}
