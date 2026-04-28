@@ -25,11 +25,20 @@ const Checkout = () => {
 
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+    // Lấy tên động từ người dùng đang đăng nhập để cá nhân hóa thông báo
+    const getFriendlyName = () => {
+        const full = localStorage.getItem('userName');
+        if (!full) return "bạn";
+        return full.trim().split(' ').pop();
+    };
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         const finalOrderID = `CFS${Math.floor(Math.random() * 900000 + 100000)}`;
+        const savedName = localStorage.getItem('userName');
+        const savedEmail = localStorage.getItem('userEmail');
 
         const orderData = {
             orderID: finalOrderID,
@@ -43,66 +52,60 @@ const Checkout = () => {
             totalPrice: totalPrice,
             location: orderType === "Mang đi" ? "Mang đi" : `Bàn ${tableNo}`,
             paymentMethod: paymentMethod,
-            customerEmail: localStorage.getItem('userEmail') || "Guest"
+            customerEmail: savedEmail || savedName || "Guest",
+            customerName: savedName || "Khách vãn lai"
         };
 
         try {
-            const response = await axios.post(`${API_URL}/api/orders`, orderData);
+            // Hiển thị trạng thái đang xử lý mượt mà trên Mobile
+            Swal.fire({
+                title: 'Đang gửi đơn hàng...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
 
-            // --- XỬ LÝ CHUNG: LƯU ID ĐƠN HÀNG VÀ XÓA GIỎ HÀNG NGAY ---
+            const response = await axios.post(`${API_URL}/api/orders`, orderData);
             const dbOrderId = response.data._id || (response.data.order && response.data.order._id);
+
+            // QUAN TRỌNG: Lưu ID đơn hàng mới nhất để hiện nút Theo dõi cho khách vãn lai
             if (dbOrderId) {
                 localStorage.setItem('lastOrderDBId', dbOrderId);
             }
 
-            // Xóa sạch giỏ hàng trong máy khách ngay lập tức
+            // Xóa sạch giỏ hàng và cập nhật Badge
             localStorage.removeItem('cart');
             window.dispatchEvent(new Event('cartUpdated'));
 
-            // --- PHÂN LUỒNG THEO PHƯƠNG THỨC THANH TOÁN ---
-
-            // 1. THANH TOÁN ONLINE (Dẫn khách đi quét mã QR)
             if (paymentMethod !== "Tiền mặt" && response.data.checkoutUrl) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Đang kết nối...',
-                    text: 'Hệ thống đang tạo mã QR thanh toán cho bạn.',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                setTimeout(() => {
-                    window.location.href = response.data.checkoutUrl;
-                }, 1500);
-
+                // Chuyển hướng sang trang thanh toán online nếu có
+                setTimeout(() => { window.location.href = response.data.checkoutUrl; }, 1000);
             } else {
-                // 2. TIỀN MẶT (Xong đơn luôn)
+                // Thông báo thành công cá nhân hóa cực xịn
                 Swal.fire({
                     icon: 'success',
-                    title: 'Đặt hàng thành công!',
-                    text: 'Đơn hàng đang "Chờ xác nhận". Vui lòng thanh toán tại quầy.',
+                    title: 'Đặt món thành công! ☕',
+                    text: `Cảm ơn ${getFriendlyName()}, đơn hàng đang được CaféSync chuẩn bị.`,
                     confirmButtonColor: '#826644',
                     confirmButtonText: 'Theo dõi đơn hàng'
-                }).then(() => {
-                    navigate('/track-order');
-                });
+                }).then(() => { navigate('/track-order'); });
             }
         } catch (error) {
             setIsSubmitting(false);
-            console.error("Lỗi đặt hàng:", error);
             Swal.fire({
                 icon: 'error',
-                title: 'Lỗi',
-                text: error.response?.data?.message || 'Không gửi được đơn hàng!'
+                title: 'Lỗi đặt hàng',
+                text: `Có lỗi xảy ra, ${getFriendlyName()} vui lòng thử lại nhé!`,
+                confirmButtonColor: '#826644'
             });
         }
     };
 
     return (
         <div className="checkout-page bg-light-custom min-vh-100 pb-5">
+            {/* Header */}
             <div className="container pt-4 d-flex align-items-center mb-4">
-                <button onClick={() => navigate('/cart')} className="btn bg-white shadow-sm rounded-circle p-2 me-3" style={{ width: '40px', height: '40px', border: 'none' }}>
+                <button onClick={() => navigate('/cart')} className="btn bg-white shadow-sm rounded-circle p-2 me-3" style={{ width: '40px', height: '40px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <i className="bi bi-chevron-left text-dark"></i>
                 </button>
                 <h4 className="fw-bold mb-0">Thanh toán</h4>
@@ -110,16 +113,19 @@ const Checkout = () => {
 
             <div className="container">
                 <div className="row g-4">
+                    {/* Cột trái: Review đơn hàng */}
                     <div className="col-lg-7">
                         <div className="card border-0 shadow-sm rounded-4 p-4 mb-4">
                             <h5 className="fw-bold mb-4 border-bottom pb-2">Tóm tắt đơn hàng</h5>
                             <div className="cart-items-review">
                                 {cart.map((item, i) => (
-                                    <div key={i} className="mb-3 pb-3 border-bottom-dashed">
+                                    <div key={i} className="mb-3 pb-3 border-bottom border-light">
                                         <div className="d-flex justify-content-between align-items-start">
                                             <div className="flex-grow-1">
-                                                <h6 className="fw-bold mb-1">{item.name} <span className="text-muted">x{item.quantity}</span></h6>
-                                                <small className="text-muted d-block">Size: {item.options?.size} | {item.options?.sugar} đường | {item.options?.ice} đá</small>
+                                                <h6 className="fw-bold mb-1">{item.name} <span className="text-muted small">x{item.quantity}</span></h6>
+                                                <small className="text-muted d-block">
+                                                    {item.options?.size} | {item.options?.sugar} đường | {item.options?.ice} đá
+                                                </small>
                                             </div>
                                             <span className="fw-bold">{(item.price * item.quantity).toLocaleString()}đ</span>
                                         </div>
@@ -132,38 +138,32 @@ const Checkout = () => {
                             </div>
                         </div>
 
+                        {/* Phương thức thanh toán */}
                         <div className="card border-0 shadow-sm rounded-4 p-4">
-                            <h5 className="fw-bold mb-4 text-brown">Phương thức thanh toán</h5>
+                            <h5 className="fw-bold mb-4">Phương thức thanh toán</h5>
                             <div className="row g-3">
-                                {[
-                                    { id: 'Tiền mặt', icon: 'bi-cash-stack', label: 'Tiền mặt', desc: 'Trả tại quầy' },
-                                    { id: 'Chuyển khoản', icon: 'bi-qr-code-scan', label: 'QR / Ví điện tử', desc: 'Bank, MoMo, ZaloPay' }
-                                ].map((method) => (
-                                    <div className="col-6" key={method.id}>
-                                        <div
-                                            className={`payment-method-card text-center p-3 rounded-4 border ${paymentMethod === method.id ? 'active-method' : ''}`}
-                                            style={{
-                                                cursor: 'pointer',
-                                                backgroundColor: paymentMethod === method.id ? '#fdf8f3' : 'white',
-                                                borderColor: paymentMethod === method.id ? '#826644' : '#eee',
-                                                transition: 'all 0.3s ease',
-                                                minHeight: '100px'
-                                            }}
-                                            onClick={() => setPaymentMethod(method.id)}
-                                        >
-                                            <i className={`bi ${method.icon} fs-2 d-block mb-2`} style={{ color: paymentMethod === method.id ? '#826644' : '#666' }}></i>
-                                            <span className="fw-bold d-block" style={{ color: paymentMethod === method.id ? '#826644' : '#333' }}>{method.label}</span>
-                                            <small className="text-muted" style={{ fontSize: '0.7rem' }}>{method.desc}</small>
-                                        </div>
+                                <div className="col-6">
+                                    <div className={`p-3 rounded-4 border text-center ${paymentMethod === 'Tiền mặt' ? 'border-primary bg-light shadow-sm' : ''}`}
+                                        onClick={() => setPaymentMethod('Tiền mặt')} style={{ cursor: 'pointer', transition: '0.3s' }}>
+                                        <i className="bi bi-cash-stack fs-2 d-block mb-2"></i>
+                                        <span className="fw-bold small">Tiền mặt</span>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="col-6">
+                                    <div className={`p-3 rounded-4 border text-center ${paymentMethod === 'Chuyển khoản' ? 'border-primary bg-light shadow-sm' : ''}`}
+                                        onClick={() => setPaymentMethod('Chuyển khoản')} style={{ cursor: 'pointer', transition: '0.3s' }}>
+                                        <i className="bi bi-qr-code-scan fs-2 d-block mb-2"></i>
+                                        <span className="fw-bold small">Chuyển khoản</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* Cột phải: Thông tin nhận hàng */}
                     <div className="col-lg-5">
                         <div className="card border-0 shadow-sm rounded-4 p-4 sticky-top" style={{ top: '20px' }}>
-                            <h5 className="fw-bold mb-4">Xác nhận nhận hàng</h5>
+                            <h5 className="fw-bold mb-4">Nhận hàng</h5>
                             <div className="mb-3">
                                 <label className="small fw-bold text-muted mb-2 text-uppercase">Hình thức</label>
                                 <select className="form-select p-3 border-0 bg-light rounded-3 shadow-none fw-bold" value={orderType} onChange={(e) => setOrderType(e.target.value)}>
@@ -175,11 +175,15 @@ const Checkout = () => {
                                 <div className="mb-4">
                                     <label className="small fw-bold text-muted mb-2 text-uppercase">Số bàn</label>
                                     <select className="form-select p-3 border-0 bg-light rounded-3 shadow-none fw-bold" value={tableNo} onChange={(e) => setTableNo(e.target.value)}>
-                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>Bàn số {n}</option>)}
+                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>Bàn {n}</option>)}
                                     </select>
                                 </div>
                             )}
-                            <button className="btn btn-dark w-100 py-3 rounded-4 fw-bold shadow mt-2" onClick={handlePlaceOrder} disabled={isSubmitting}>
+                            <button
+                                className="btn btn-dark w-100 py-3 rounded-4 fw-bold shadow mt-2"
+                                onClick={handlePlaceOrder}
+                                disabled={isSubmitting}
+                            >
                                 {isSubmitting ? "ĐANG XỬ LÝ..." : "XÁC NHẬN ĐẶT MÓN"}
                             </button>
                         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../assets/css/detail.css';
+import { showToast } from '../utils/toast'; // Import bộ thông báo xịn
 
 const Detail = () => {
     const { id } = useParams();
@@ -13,10 +14,17 @@ const Detail = () => {
     const [options, setOptions] = useState({ size: 'M', sugar: '100%', ice: '100%', toppings: [] });
     const [note, setNote] = useState("");
     const [cartCount, setCartCount] = useState(0);
+    const [isFavorite, setIsFavorite] = useState(false);
 
     const updateCartCount = () => {
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+    };
+
+    // Kiểm tra xem món này đã nằm trong danh sách yêu thích chưa
+    const checkFavoriteStatus = (productId) => {
+        const favs = JSON.parse(localStorage.getItem('favorites')) || [];
+        setIsFavorite(favs.some(f => f._id === productId));
     };
 
     useEffect(() => {
@@ -24,6 +32,7 @@ const Detail = () => {
             .then(res => {
                 const data = res.data;
                 setProduct(data);
+                checkFavoriteStatus(id);
                 setOptions({
                     size: data.sizes?.[1] || data.sizes?.[0] || 'M',
                     sugar: data.sugarOptions?.[data.sugarOptions.length - 1] || '100%',
@@ -52,19 +61,42 @@ const Detail = () => {
         setOptions({ ...options, toppings: current });
     };
 
+    // Hàm xử lý Yêu thích (Favorite)
+    const toggleFavorite = () => {
+        let favs = JSON.parse(localStorage.getItem('favorites')) || [];
+        if (isFavorite) {
+            favs = favs.filter(f => f._id !== product._id);
+            showToast("Đã bỏ yêu thích món này", "info");
+        } else {
+            favs.push(product);
+            showToast("Đã thêm vào danh sách yêu thích");
+        }
+        localStorage.setItem('favorites', JSON.stringify(favs));
+        setIsFavorite(!isFavorite);
+    };
+
     const handleAddToCart = () => {
         const newItem = {
             _id: product._id,
-            name: product.name, price: product.price + getExtraPrice(),
-            image: product.image, quantity, options, note
+            name: product.name,
+            price: product.price + getExtraPrice(),
+            image: product.image,
+            quantity,
+            options,
+            note,
+            category: product.category // Lưu thêm category để phục vụ logic gợi ý
         };
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         const existIdx = cart.findIndex(i => i._id === newItem._id && JSON.stringify(i.options) === JSON.stringify(newItem.options));
+
         existIdx > -1 ? cart[existIdx].quantity += quantity : cart.push(newItem);
+
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('cartUpdated'));
         updateCartCount();
-        alert(`Đã thêm ${product.name} vào giỏ hàng! ✨`);
+
+        // Thông báo chuyên nghiệp thay cho alert()
+        showToast(`Đã thêm ${quantity} x ${product.name} vào giỏ!`);
     };
 
     return (
@@ -72,7 +104,9 @@ const Detail = () => {
             <div className="top-nav-bar">
                 <button className="nav-icon-btn" onClick={() => navigate(-1)}><i className="bi bi-chevron-left"></i></button>
                 <span className="nav-title">Chi tiết món</span>
-                <button className="nav-icon-btn"><i className="bi bi-heart"></i></button>
+                <button className="nav-icon-btn" onClick={toggleFavorite}>
+                    <i className={`bi ${isFavorite ? 'bi-heart-fill text-danger' : 'bi-heart'}`}></i>
+                </button>
             </div>
 
             <div className="hero-image-container">
@@ -81,7 +115,7 @@ const Detail = () => {
 
             <div className="detail-content-sheet-full">
                 <h1 className="premium-item-name">{product.name}</h1>
-                <p className="premium-description">{product.description || "Hương vị cà phê đích thực."}</p>
+                <p className="premium-description">{product.description || "Hương vị cà phê đích thực từ CaféSync."}</p>
 
                 <div className="option-section">
                     <span className="premium-section-title">Kích cỡ ly</span>

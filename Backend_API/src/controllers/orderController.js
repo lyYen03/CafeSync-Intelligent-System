@@ -3,7 +3,7 @@ const Order = require("../models/Order");
 // 📌 1. Xử lý đặt hàng
 const createOrder = async (req, res) => {
   try {
-    const { items, totalPrice, location, paymentMethod, orderID } = req.body;
+    const { items, totalPrice, location, paymentMethod, orderID, customerEmail } = req.body;
     const finalOrderID = orderID || `CFS${Math.floor(Math.random() * 900000 + 100000)}`;
 
     // --- TRƯỜNG HỢP 1: THANH TOÁN TIỀN MẶT ---
@@ -14,7 +14,8 @@ const createOrder = async (req, res) => {
         totalPrice,
         location,
         paymentMethod: "Tiền mặt",
-        status: "Chờ xác nhận", // Khách chọn tiền mặt -> Đợi quán xác nhận rồi mới làm
+        customerEmail: customerEmail || "Guest", // Lưu email để làm lịch sử
+        status: "Chờ xác nhận",
         createdAt: Date.now(),
       });
       console.log(`✅ Đơn tiền mặt đang đợi xác nhận: ${finalOrderID}`);
@@ -46,14 +47,13 @@ const createOrder = async (req, res) => {
 
       const paymentLinkRes = await payosInstance.createPaymentLink(paymentData);
 
-      // Đơn online cũng lưu ở trạng thái "Chờ thanh toán"
-      // Sau khi Webhook báo PAID, ta sẽ đổi thành "Chờ xác nhận" để nhân viên duyệt
       const pendingOrder = await Order.create({
         orderID: finalOrderID,
         items,
         totalPrice,
         location,
         paymentMethod: "Chuyển khoản/Ví điện tử",
+        customerEmail: customerEmail || "Guest", // Lưu email ở đây luôn
         status: "Chờ thanh toán",
         createdAt: Date.now(),
       });
@@ -75,7 +75,7 @@ const createOrder = async (req, res) => {
   }
 };
 
-// 📌 2. Lấy tất cả order (Sắp xếp mới nhất lên đầu)
+// 📌 2. Lấy tất cả order
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -85,7 +85,18 @@ const getOrders = async (req, res) => {
   }
 };
 
-// 📌 3. Lấy order theo ID
+// 📌 3. Lấy lịch sử đơn hàng theo Email/Name (Dành cho Yến)
+const getOrdersByEmail = async (req, res) => {
+  try {
+    const identifier = req.params.email;
+    const orders = await Order.find({ customerEmail: identifier }).sort({ createdAt: -1 });
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi lấy lịch sử!", error: err.message });
+  }
+};
+
+// 📌 4. Lấy order theo ID
 const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -96,7 +107,7 @@ const getOrderById = async (req, res) => {
   }
 };
 
-// 📌 4. Cập nhật trạng thái đơn (Admin dùng để đổi từ Pha chế -> Hoàn thành)
+// 📌 5. Cập nhật trạng thái
 const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -111,7 +122,7 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-// 📌 5. Xóa đơn hàng
+// 📌 6. Xóa đơn hàng
 const deleteOrder = async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
@@ -124,6 +135,7 @@ const deleteOrder = async (req, res) => {
 module.exports = {
   createOrder,
   getOrders,
+  getOrdersByEmail, // <--- Nhớ export hàm này
   getOrderById,
   updateOrderStatus,
   deleteOrder,

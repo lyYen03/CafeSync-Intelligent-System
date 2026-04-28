@@ -7,20 +7,24 @@ const {
     getOrderById,
     updateOrderStatus,
     deleteOrder,
+    getOrdersByEmail // <--- Đã thêm hàm mới
 } = require("../controllers/orderController");
 
-// 1. Nhận đơn hàng (Dùng cho cả giao diện Khách và Admin)
-// Cả hai đường dẫn này đều sẽ chạy hàm createOrder của Tài
+// 1. Nhận đơn hàng
 router.post("/", createOrder);
-router.post("/place-order", createOrder); // Giữ cái này để code Frontend cũ của Yến không bị lỗi
+router.post("/place-order", createOrder);
 
-// 2. Lấy danh sách đơn hàng (Cho Admin của Tài)
+// 2. Lấy danh sách đơn hàng (Cho Admin)
 router.get("/", getOrders);
 
-// 3. Lấy chi tiết đơn hàng (Cho tính năng Theo dõi đơn của Yến)
+// 3. Lấy lịch sử đơn hàng theo Email (Cho tính năng của Yến)
+// Phải đặt cái này TRÊN cái /:id để Express không nhầm "user" là một cái "id"
+router.get("/user/:email", getOrdersByEmail);
+
+// 4. Lấy chi tiết đơn hàng theo ID
 router.get("/:id", getOrderById);
 
-// 4. Cập nhật trạng thái & Xóa (Cho Admin)
+// 5. Cập nhật & Xóa
 router.put("/:id/status", updateOrderStatus);
 router.delete("/:id", deleteOrder);
 

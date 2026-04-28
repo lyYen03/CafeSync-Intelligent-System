@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../assets/css/style.css';
+import { showToast, showConfirm } from '../utils/toast'; // Import bộ thông báo xịn
 
 const Cart = () => {
     const [cart, setCart] = useState([]);
@@ -16,22 +17,35 @@ const Cart = () => {
     // 2. Hàm thay đổi số lượng món
     const updateQuantity = (index, delta) => {
         const newCart = [...cart];
-        newCart[index].quantity += delta;
+        const item = newCart[index];
 
-        // Nếu số lượng về 0 thì xóa luôn món đó
-        if (newCart[index].quantity < 1) {
-            newCart.splice(index, 1);
+        if (item.quantity === 1 && delta === -1) {
+            // Nếu khách muốn giảm khi số lượng đang là 1, hỏi xem có muốn xóa không
+            removeItem(index);
+            return;
         }
 
-        setCart(newCart);
-        localStorage.setItem('cart', JSON.stringify(newCart));
-        // Kích hoạt sự kiện để Navbar/Badge cập nhật theo
-        window.dispatchEvent(new Event('cartUpdated'));
+        item.quantity += delta;
+        saveAndRefresh(newCart);
     };
 
-    // 3. Hàm xóa món khỏi giỏ
-    const removeItem = (index) => {
-        const newCart = cart.filter((_, i) => i !== index);
+    // 3. Hàm xóa món khỏi giỏ (Dùng showConfirm cực chuyên nghiệp)
+    const removeItem = async (index) => {
+        const item = cart[index];
+        const result = await showConfirm(
+            "Xóa món?",
+            `Bạn muốn bỏ ${item.name} khỏi giỏ hàng sao?`
+        );
+
+        if (result.isConfirmed) {
+            const newCart = cart.filter((_, i) => i !== index);
+            saveAndRefresh(newCart);
+            showToast("Đã xóa món khỏi giỏ", "info");
+        }
+    };
+
+    // Hàm phụ để lưu dữ liệu đồng nhất
+    const saveAndRefresh = (newCart) => {
         setCart(newCart);
         localStorage.setItem('cart', JSON.stringify(newCart));
         window.dispatchEvent(new Event('cartUpdated'));
@@ -55,7 +69,7 @@ const Cart = () => {
                 <h4 className="fw-bold mb-0">Giỏ hàng của bạn</h4>
             </div>
 
-            <div className="container mt-2">
+            <div className="container mt-2" style={{ paddingBottom: '120px' }}>
                 {cart.length === 0 ? (
                     /* GIAO DIỆN KHI GIỎ TRỐNG */
                     <div className="text-center py-5">
@@ -63,7 +77,7 @@ const Cart = () => {
                             <i className="bi bi-cart-x fs-1 text-muted"></i>
                         </div>
                         <h5 className="fw-bold">Giỏ hàng đang trống</h5>
-                        <p className="text-muted small">Chọn món ngay để Syncie pha chế nhé! ☕</p>
+                        <p className="text-muted small">Chọn món ngay để CaféSync pha chế nhé!</p>
                         <Link to="/" className="btn btn-dark rounded-pill px-4 mt-3">Tiếp tục chọn món</Link>
                     </div>
                 ) : (
@@ -89,17 +103,19 @@ const Cart = () => {
                                                 <div>
                                                     <h6 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{item.name}</h6>
 
-                                                    {/* Hiển thị Size, Đường, Đá */}
+                                                    {/* Hiển thị Tùy chọn: Size, Đường, Đá */}
                                                     {item.options && (
-                                                        <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem' }}>
-                                                            {item.options.size} | {item.options.sugar} đường | {item.options.ice} đá
-                                                        </small>
+                                                        <div className="mt-1 d-flex flex-wrap gap-1">
+                                                            <span className="badge bg-light text-dark border fw-normal" style={{ fontSize: '0.65rem' }}>Size {item.options.size}</span>
+                                                            <span className="badge bg-light text-dark border fw-normal" style={{ fontSize: '0.65rem' }}>{item.options.sugar} đường</span>
+                                                            <span className="badge bg-light text-dark border fw-normal" style={{ fontSize: '0.65rem' }}>{item.options.ice} đá</span>
+                                                        </div>
                                                     )}
 
                                                     {/* Hiển thị Topping */}
                                                     {item.options?.toppings?.length > 0 && (
                                                         <small className="d-block mt-1" style={{ fontSize: '0.75rem', color: '#826644', fontWeight: '600' }}>
-                                                            + Topping: {item.options.toppings.join(', ')}
+                                                            + {item.options.toppings.join(', ')}
                                                         </small>
                                                     )}
 
@@ -107,12 +123,12 @@ const Cart = () => {
                                                     {item.note && (
                                                         <div className="mt-2 p-2 rounded-3" style={{ background: '#fdfaf2', borderLeft: '3px solid #826644' }}>
                                                             <small className="text-muted d-block" style={{ fontSize: '0.7rem', fontStyle: 'italic' }}>
-                                                                Note: {item.note}
+                                                                "{item.note}"
                                                             </small>
                                                         </div>
                                                     )}
                                                 </div>
-                                                <i className="bi bi-trash3 text-danger opacity-25"
+                                                <i className="bi bi-trash3 text-danger opacity-50"
                                                     onClick={() => removeItem(index)}
                                                     style={{ cursor: 'pointer', fontSize: '1.1rem' }}></i>
                                             </div>
@@ -122,9 +138,9 @@ const Cart = () => {
                                                     {(item.price * item.quantity).toLocaleString()}đ
                                                 </span>
                                                 <div className="d-flex align-items-center bg-light rounded-pill px-1 border border-light-subtle">
-                                                    <button className="btn btn-sm border-0 px-2" onClick={() => updateQuantity(index, -1)}><i className="bi bi-dash"></i></button>
-                                                    <span className="mx-2 fw-bold small">{item.quantity}</span>
-                                                    <button className="btn btn-sm border-0 px-2" onClick={() => updateQuantity(index, 1)}><i className="bi bi-plus"></i></button>
+                                                    <button className="btn btn-sm border-0 px-2" onClick={() => updateQuantity(index, -1)}><i className="bi bi-dash-lg"></i></button>
+                                                    <span className="mx-2 fw-bold small" style={{ minWidth: '15px', textAlign: 'center' }}>{item.quantity}</span>
+                                                    <button className="btn btn-sm border-0 px-2" onClick={() => updateQuantity(index, 1)}><i className="bi bi-plus-lg"></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -137,11 +153,24 @@ const Cart = () => {
             </div>
 
             {/* THANH THANH TOÁN CỐ ĐỊNH Ở ĐÁY */}
-            <div className="fixed-bottom bg-white p-4 shadow-lg" style={{ borderRadius: '30px 30px 0 0' }}>
+            <div className="fixed-bottom bg-white p-4 shadow-lg" style={{ borderRadius: '30px 30px 0 0', zIndex: 10 }}>
                 <div className="container">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <span className="text-muted small">Tổng cộng ({totalItems} món)</span>
-                        <h4 className="fw-bold mb-0" style={{ color: '#826644' }}>{totalPrice.toLocaleString()}đ</h4>
+                        <div>
+                            <span className="text-muted small d-block">Tổng cộng ({totalItems} món)</span>
+                            <h4 className="fw-bold mb-0" style={{ color: '#826644' }}>{totalPrice.toLocaleString()}đ</h4>
+                        </div>
+                        {cart.length > 0 && (
+                            <button
+                                className="btn btn-outline-danger btn-sm rounded-pill"
+                                onClick={async () => {
+                                    const res = await showConfirm("Xóa sạch?", "Bạn muốn làm trống giỏ hàng chứ?");
+                                    if (res.isConfirmed) saveAndRefresh([]);
+                                }}
+                            >
+                                <i className="bi bi-trash me-1"></i> Xóa hết
+                            </button>
+                        )}
                     </div>
 
                     <button
@@ -149,7 +178,7 @@ const Cart = () => {
                         disabled={cart.length === 0}
                         onClick={() => navigate('/checkout')}
                     >
-                        {cart.length === 0 ? 'GIỎ HÀNG TRỐNG' : 'XÁC NHẬN ĐƠN HÀNG'} <i className="bi bi-arrow-right ms-2"></i>
+                        {cart.length === 0 ? 'GIỎ HÀNG ĐANG TRỐNG' : 'XÁC NHẬN ĐƠN HÀNG'} <i className="bi bi-arrow-right ms-2"></i>
                     </button>
                 </div>
             </div>
