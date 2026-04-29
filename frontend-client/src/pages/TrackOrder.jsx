@@ -64,7 +64,7 @@ const TrackOrder = () => {
     if (loading) return (
         <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-creme">
             <div className="spinner-coffee mb-3"></div>
-            <p className="text-muted fw-bold">Đang tải thông tin đơn hàng... ☕</p>
+            <p className="text-muted fw-bold">Đang tải thông tin đơn hàng...</p>
         </div>
     );
 

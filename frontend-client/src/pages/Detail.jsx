@@ -44,7 +44,7 @@ const Detail = () => {
         updateCartCount();
     }, [id]);
 
-    if (!product) return <div className="loading-state">☕ Đang pha chế...</div>;
+    if (!product) return <div className="loading-state"> Đang pha chế...</div>;
 
     const getExtraPrice = () => {
         if (options.size === 'S') return 0;

@@ -34,15 +34,15 @@ const Home = ({ cartCount }) => {
     const getContextMessage = () => {
         const hour = new Date().getHours();
         const name = getShortName();
-        if (hour >= 5 && hour < 12) return `Sáng sớm tỉnh táo với Cà phê nhé ${name}! ☀️`;
-        if (hour >= 12 && hour < 18) return `Chiều năng lượng với Trà & Sinh tố nhé ${name}! 🍹`;
-        return `Tối nhẹ nhàng với Nước ép thanh mát nhé ${name}! ✨`;
+        if (hour >= 5 && hour < 12) return `Sáng sớm tỉnh táo với Cà phê nhé ${name}!`;
+        if (hour >= 12 && hour < 18) return `Chiều năng lượng với Trà & Sinh tố nhé ${name}!`;
+        return `Tối nhẹ nhàng với Nước ép thanh mát nhé ${name}!`;
     };
 
     const handleLogout = async () => {
         const result = await showConfirm(
             `${getShortName()} ơi...`,
-            "Bạn muốn đăng xuất khỏi CaféSync sao? ☕"
+            "Bạn muốn đăng xuất khỏi CaféSync sao?"
         );
         if (result.isConfirmed) {
             localStorage.removeItem('userToken');
@@ -100,7 +100,7 @@ const Home = ({ cartCount }) => {
         setFavorites(updatedFavs);
         localStorage.setItem('favorites', JSON.stringify(updatedFavs));
 
-        if (!isExist) showToast(`Đã thích ${product.name} ❤️`);
+        if (!isExist) showToast(`Đã thích ${product.name}`);
     };
 
     const addToCart = (e, product) => {
@@ -116,7 +116,7 @@ const Home = ({ cartCount }) => {
 
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('cartUpdated'));
-        showToast(`Đã thêm ${product.name} vào giỏ! 🛒`);
+        showToast(`Đã thêm ${product.name} vào giỏ!`);
     };
 
     return (
@@ -125,7 +125,7 @@ const Home = ({ cartCount }) => {
             <div className="container pt-4 d-flex justify-content-between align-items-center mb-1">
                 <div>
                     <h4 className="fw-bold mb-0" style={{ fontFamily: 'Playfair Display', color: '#826644' }}>CaféSync</h4>
-                    <small className="text-muted">{userName ? `Chào ${userName} ✨` : "Chào bạn ✨"}</small>
+                    <small className="text-muted">{userName ? `Chào ${userName} ` : "Chào bạn "}</small>
                 </div>
                 <div className="d-flex gap-2">
                     {(userName || localStorage.getItem('lastOrderDBId')) && (
@@ -155,7 +155,7 @@ const Home = ({ cartCount }) => {
                                 className={`btn btn-sm rounded-pill mt-2 px-4 fw-bold ${isPersonalized ? 'btn-warning text-dark shadow' : 'btn-light'}`}
                                 onClick={handleShowPersonalized}
                             >
-                                {isPersonalized ? "Đang hiện Smart Menu ✨" : "Xem ngay"}
+                                {isPersonalized ? "Đang hiện Smart Menu" : "Xem ngay"}
                             </button>
                         </div>
                         <i className={`bi ${isPersonalized ? 'bi-cpu-fill' : 'bi-stars'} fs-1 opacity-50`}></i>

@@ -11,7 +11,8 @@ import TrackOrder from './pages/TrackOrder.jsx';
 import Login from './pages/Login.jsx';
 import Favorites from './pages/Favorites.jsx';
 import OrderHistory from './pages/OrderHistory.jsx';
-import Profile from './pages/Profile.jsx'; // <--- MÁ THÊM TRANG PROFILE NÀY
+import Profile from './pages/Profile.jsx';
+import Chatbot from './components/Chatbot.jsx'; // 1. Má đã thêm dòng import này
 
 function App() {
   const [cartCount, setCartCount] = useState(0);
@@ -42,10 +43,13 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/track-order" element={<TrackOrder />} />
           <Route path="/history" element={<OrderHistory />} />
-          <Route path="/profile" element={<Profile />} /> {/* <--- ROUTE PROFILE ĐÃ SẴN SÀNG */}
+          <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/favorites" element={<Favorites />} />
         </Routes>
+
+        {/* 2. CHATBOT NẰM Ở ĐÂY: Sẽ hiện trên tất cả các trang */}
+        <Chatbot />
       </div>
     </Router>
   );

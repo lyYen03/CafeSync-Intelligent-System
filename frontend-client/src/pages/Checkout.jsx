@@ -84,7 +84,7 @@ const Checkout = () => {
                 // Thông báo thành công cá nhân hóa cực xịn
                 Swal.fire({
                     icon: 'success',
-                    title: 'Đặt món thành công! ☕',
+                    title: 'Đặt món thành công!',
                     text: `Cảm ơn ${getFriendlyName()}, đơn hàng đang được CaféSync chuẩn bị.`,
                     confirmButtonColor: '#826644',
                     confirmButtonText: 'Theo dõi đơn hàng'

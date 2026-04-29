@@ -14,11 +14,10 @@ const createOrder = async (req, res) => {
         totalPrice,
         location,
         paymentMethod: "Tiền mặt",
-        customerEmail: customerEmail || "Guest", // Lưu email để làm lịch sử
+        customerEmail: customerEmail || "Guest",
         status: "Chờ xác nhận",
         createdAt: Date.now(),
       });
-      console.log(`✅ Đơn tiền mặt đang đợi xác nhận: ${finalOrderID}`);
       return res.status(201).json(newOrder);
     }
 
@@ -41,8 +40,9 @@ const createOrder = async (req, res) => {
         orderCode: orderCode,
         amount: totalPrice,
         description: `Thanh toan don ${finalOrderID}`,
+        // ĐÃ CHỈNH VỀ CỔNG 3001 CHO KHÁCH
         returnUrl: `http://localhost:3001/track-order`,
-        cancelUrl: `http://localhost:3001/checkout`,
+        cancelUrl: `http://localhost:5000/api/orders/cancel/${finalOrderID}`,
       };
 
       const paymentLinkRes = await payosInstance.createPaymentLink(paymentData);
@@ -53,7 +53,7 @@ const createOrder = async (req, res) => {
         totalPrice,
         location,
         paymentMethod: "Chuyển khoản/Ví điện tử",
-        customerEmail: customerEmail || "Guest", // Lưu email ở đây luôn
+        customerEmail: customerEmail || "Guest",
         status: "Chờ thanh toán",
         createdAt: Date.now(),
       });
@@ -75,7 +75,7 @@ const createOrder = async (req, res) => {
   }
 };
 
-// 📌 2. Lấy tất cả order
+// 📌 2. Lấy tất cả order (Thường cổng 3000 sẽ gọi cái này nhiều nhất)
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -85,7 +85,7 @@ const getOrders = async (req, res) => {
   }
 };
 
-// 📌 3. Lấy lịch sử đơn hàng theo Email/Name (Dành cho Yến)
+// 📌 3. Lấy lịch sử đơn hàng theo định danh
 const getOrdersByEmail = async (req, res) => {
   try {
     const identifier = req.params.email;
@@ -107,7 +107,7 @@ const getOrderById = async (req, res) => {
   }
 };
 
-// 📌 5. Cập nhật trạng thái
+// 📌 5. Cập nhật trạng thái (Dành cho cổng 3000 duyệt đơn)
 const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -132,11 +132,32 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+// 📌 7. Hủy đơn khi khách nhấn Hủy trên PayOS
+const cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    // Tìm và xóa sổ ngay
+    const deletedOrder = await Order.findOneAndDelete({ orderID: orderId });
+
+    if (deletedOrder) {
+      console.log(`🗑️ Đã xóa vĩnh viễn đơn hàng hủy: ${orderId}`);
+    }
+
+    // Redirect về cổng 3001 của khách
+    res.redirect(`http://localhost:3001/cart?status=cancelled`);
+  } catch (error) {
+    console.error("Lỗi khi xóa đơn hủy:", error);
+    res.status(500).json({ message: "Không thể xử lý yêu cầu xóa đơn." });
+  }
+};
+
+// ĐƯA TẤT CẢ VÀO ĐÂY ĐỂ EXPORT MỘT LẦN
 module.exports = {
   createOrder,
   getOrders,
-  getOrdersByEmail, // <--- Nhớ export hàm này
+  getOrdersByEmail,
   getOrderById,
   updateOrderStatus,
   deleteOrder,
+  cancelOrder, // <--- ĐẢM BẢO CÓ EM NÀY
 };

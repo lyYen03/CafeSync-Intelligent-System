@@ -27,7 +27,10 @@ const Login = () => {
         try {
             const res = await axios.post(`${API_URL}/login-custom`, loginData);
             if (res.data.token) {
-                // Cất "3 món bảo bối" vào LocalStorage để các trang khác sử dụng
+                // XÓA DẤU VẾT KHÁCH VÃN LAI TRƯỚC KHI LƯU USER MỚI
+                localStorage.removeItem('lastOrderDBId');
+                localStorage.removeItem('cart'); // Nếu muốn giỏ hàng cũng phải sạch khi đổi user
+
                 localStorage.setItem('userToken', res.data.token);
                 localStorage.setItem('userName', res.data.user.name);
                 localStorage.setItem('userEmail', res.data.user.email);
@@ -65,16 +68,20 @@ const Login = () => {
         try {
             await axios.post(`${API_URL}/register-custom`, registerData);
 
-            const friendlyName = getFirstName(registerData.name);
+            // 1. Xóa dấu vết đơn hàng khách vãn lai để tài khoản mới sạch sẽ
+            localStorage.removeItem('lastOrderDBId');
+
+            // 2. Lấy tên để chào cho thân thiện
+            const friendlyName = registerData.name.trim().split(' ').pop();
 
             Swal.fire({
                 icon: 'success',
-                title: 'Thành công!',
-                text: `Tài khoản đã sẵn sàng. Mời ${friendlyName} đăng nhập nhé!`,
+                title: 'Đăng ký thành công!',
+                text: `Tài khoản của ${friendlyName} đã sẵn sàng. Mời bạn đăng nhập nhé!`,
                 confirmButtonColor: '#826644'
             });
 
-            setIsLoginTab(true); // Tự động chuyển sang tab đăng nhập
+            setIsLoginTab(true);
         } catch (error) {
             Swal.fire({
                 icon: 'error',

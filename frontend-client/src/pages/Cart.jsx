@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../assets/css/style.css';
 import { showToast, showConfirm } from '../utils/toast'; // Import bộ thông báo xịn
+import Swal from 'sweetalert2'; // <--- Thêm dòng này để chạy được thông báo Hủy thanh toán
 
 const Cart = () => {
     const [cart, setCart] = useState([]);
@@ -50,6 +51,26 @@ const Cart = () => {
         localStorage.setItem('cart', JSON.stringify(newCart));
         window.dispatchEvent(new Event('cartUpdated'));
     };
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        // Lấy tên gọi thân mật từ LocalStorage
+        const savedName = localStorage.getItem('userName');
+        const friendlyName = savedName ? savedName.trim().split(' ').pop() : "bạn";
+
+        if (params.get('status') === 'cancelled') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Đã hủy thanh toán',
+                text: `Đơn hàng của ${friendlyName} đã được hủy thành công. Đừng lo, quầy pha chế sẽ không nhận đơn này đâu nhé!`,
+                confirmButtonColor: '#826644'
+            });
+
+            // Dọn sạch URL để không hiện lại thông báo khi load trang
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, []);
 
     // 4. Tính toán tổng tiền và tổng số lượng
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -183,6 +204,7 @@ const Cart = () => {
                 </div>
             </div>
         </div>
+
     );
 };
 

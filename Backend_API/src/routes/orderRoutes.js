@@ -7,24 +7,25 @@ const {
     getOrderById,
     updateOrderStatus,
     deleteOrder,
-    getOrdersByEmail // <--- Đã thêm hàm mới
+    getOrdersByEmail,
+    cancelOrder // <--- THÊM hàm này vào đây
 } = require("../controllers/orderController");
 
 // 1. Nhận đơn hàng
 router.post("/", createOrder);
 router.post("/place-order", createOrder);
 
-// 2. Lấy danh sách đơn hàng (Cho Admin)
+// 2. Lấy danh sách đơn hàng
 router.get("/", getOrders);
 
-// 3. Lấy lịch sử đơn hàng theo Email (Cho tính năng của Yến)
-// Phải đặt cái này TRÊN cái /:id để Express không nhầm "user" là một cái "id"
+// 3. Lấy lịch sử theo Email
 router.get("/user/:email", getOrdersByEmail);
 
-// 4. Lấy chi tiết đơn hàng theo ID
-router.get("/:id", getOrderById);
+// 4. Hủy đơn (Phải đặt TRÊN cái /:id để tránh trùng lặp route)
+router.get('/cancel/:orderId', cancelOrder); // <--- ĐỔI THÀNH THẾ NÀY
 
-// 5. Cập nhật & Xóa
+// 5. Lấy chi tiết & Cập nhật
+router.get("/:id", getOrderById);
 router.put("/:id/status", updateOrderStatus);
 router.delete("/:id", deleteOrder);
 
