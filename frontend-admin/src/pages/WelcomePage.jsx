@@ -23,7 +23,7 @@ const WelcomePage = () => {
         }}
       >
         <Title level={2} style={{ color: "#1677ff" }}>
-          Chào mừng {user.name || user.username || "bạn"}!
+          Chào mừng {user.name || "bạn"}!
         </Title>
         <Paragraph>
           Chúc bạn một ngày làm việc hiệu quả cùng hệ thống quản lý CafeSync ☕️

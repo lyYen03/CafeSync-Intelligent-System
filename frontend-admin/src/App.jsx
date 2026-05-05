@@ -1,5 +1,6 @@
 import LoginPage from "./pages/LoginPage";
 import RequireAuth from "./components/RequireAuth";
+import RequireAdmin from "./components/RequireAdmin";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import WelcomePage from "./pages/WelcomePage";
 import AdminLayout from "./layouts/AdminLayout";
@@ -30,12 +31,12 @@ function App() {
                   <Route path="/pos" element={<POSPage />} /> {/* 👈 Route cho Nhân viên/POS */}
                   <Route path="/profile" element={<ProfilePage />} />
 
-                  {/* --- CHỨC NĂNG CHỈ ADMIN (Có thể bọc thêm logic nếu muốn) --- */}
-                  <Route path="/CategoryPage" element={<CategoryPage />} />
-                  <Route path="/users" element={<UserManagementPage />} />
-                  <Route path="/products" element={<ProductPage />} />
-                  <Route path="/ingredients" element={<IngredientManagementPage />} />
-                  <Route path="/reports" element={<RevenueReportPage />} />
+                  {/* --- CHỨC NĂNG CHỈ ADMIN --- */}
+                  <Route path="/CategoryPage" element={<RequireAdmin><CategoryPage /></RequireAdmin>} />
+                  <Route path="/users" element={<RequireAdmin><UserManagementPage /></RequireAdmin>} />
+                  <Route path="/products" element={<RequireAdmin><ProductPage /></RequireAdmin>} />
+                  <Route path="/ingredients" element={<RequireAdmin><IngredientManagementPage /></RequireAdmin>} />
+                  <Route path="/reports" element={<RequireAdmin><RevenueReportPage /></RequireAdmin>} />
                 </Routes>
               </AdminLayout>
             </RequireAuth>

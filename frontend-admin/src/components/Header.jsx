@@ -12,7 +12,7 @@ const Header = () => {
   // 👉 Lấy thông tin user từ localStorage
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
-  const userName = user?.name || user?.username || "Admin";
+  const userName = user?.name || "Admin";
 
   // 👉 Logout handler
   const handleLogout = () => {
@@ -111,10 +111,10 @@ const Header = () => {
         {user ? (
           <Descriptions column={1} bordered size="small" style={{ marginTop: 16 }}>
             <Descriptions.Item label="Họ và tên">{user.name}</Descriptions.Item>
-            <Descriptions.Item label="Tên đăng nhập">{user.username}</Descriptions.Item>
+            <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
             <Descriptions.Item label="Vai trò">
               <Typography.Text type="secondary">
-                {user.role === "admin" ? "Admin" : user.role === "nhanvien" ? "Nhân viên" : user.role}
+                {user.role === "admin" ? "Admin" : user.role === "nhanvien" ? "Nhân viên" : user.role === "customer" ? "Khách hàng" : user.role}
               </Typography.Text>
             </Descriptions.Item>
           </Descriptions>

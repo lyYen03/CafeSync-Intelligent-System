@@ -31,7 +31,7 @@ const Favorites = () => {
                 {favorites.length === 0 ? (
                     <div className="text-center py-5">
                         <i className="bi bi-heart text-muted fs-1"></i>
-                        <p className="mt-3 text-muted">Yến chưa thả tim món nào hết!</p>
+                        <p className="mt-3 text-muted">Bạn chưa thả tim món nào hết!</p>
                         <button onClick={() => navigate('/')} className="btn btn-dark rounded-pill px-4">Khám phá Menu</button>
                     </div>
                 ) : (

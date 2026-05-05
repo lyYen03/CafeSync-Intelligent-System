@@ -22,7 +22,7 @@ const Login = () => {
             if (res.data.token) {
                 localStorage.setItem('userToken', res.data.token);
                 localStorage.setItem('userName', res.data.user.name);
-                alert(`Chào mừng Yến quay trở lại CaféSync! ☕`);
+                alert(`Chào mừng ${res.data.user.name} quay trở lại CaféSync! ☕`);
                 navigate('/');
                 window.location.reload();
             }
@@ -36,7 +36,7 @@ const Login = () => {
         e.preventDefault();
         try {
             await axios.post(`${API_URL}/register-custom`, registerData);
-            alert("Tạo tài khoản thành công! 🎉 Mời Yến đăng nhập.");
+            alert("Tạo tài khoản thành công! 🎉 Mời bạn đăng nhập.");
             setIsLoginTab(true); // Tự động chuyển về tab đăng nhập
         } catch (error) {
             alert(error.response?.data?.message || "Đăng ký không thành công!");

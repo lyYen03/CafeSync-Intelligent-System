@@ -60,7 +60,8 @@ app.post('/api/auth/register-custom', async (req, res) => {
 app.post('/api/auth/login-custom', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        // Tìm theo email hoặc username (để tài khoản do admin tạo cũng đăng nhập được)
+        const user = await User.findOne({ $or: [{ email }, { username: email }] });
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại!" });
 
         const isMatch = await user.comparePassword(password);

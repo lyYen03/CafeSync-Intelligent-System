@@ -20,6 +20,15 @@ const LoginPage = () => {
 
       const { token, user } = res.data;
 
+      // Nếu là customer, không cho vào trang Admin mà điều hướng thẳng sang trang Client
+      if (user.role === "customer") {
+        message.info("Tài khoản khách hàng. Đang chuyển sang trang Khách hàng...");
+        setTimeout(() => {
+          window.location.href = "http://localhost:3001";
+        }, 1000);
+        return;
+      }
+
       // 🔐 lưu auth chuẩn hơn
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
@@ -48,11 +57,14 @@ const LoginPage = () => {
 
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item
-            label="Tài khoản"
-            name="username"
-            rules={[{ required: true, message: "Nhập tài khoản!" }]}
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Nhập email!" },
+              { type: "email", message: "Email không hợp lệ!" },
+            ]}
           >
-            <Input size="large" placeholder="username..." />
+            <Input size="large" placeholder="example@email.com" />
           </Form.Item>
 
           <Form.Item

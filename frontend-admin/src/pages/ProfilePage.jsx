@@ -34,7 +34,6 @@ const ProfilePage = () => {
     try {
       const res = await axios.put(`http://localhost:5000/api/users/${userId}`, {
         name: values.name,
-        username: values.username,
         role: currentUser.role
       });
       
@@ -88,7 +87,6 @@ const ProfilePage = () => {
           onFinish={onFinish}
           initialValues={{
             name: currentUser?.name,
-            username: currentUser?.username
           }}
         >
           <Typography.Title level={5}>Thông tin cơ bản</Typography.Title>
@@ -100,13 +98,6 @@ const ProfilePage = () => {
             <Input size="large" />
           </Form.Item>
           
-          <Form.Item
-            label="Tên đăng nhập"
-            name="username"
-            rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập!" }]}
-          >
-            <Input size="large" />
-          </Form.Item>
 
           <Typography.Title level={5} style={{ marginTop: 24 }}>Đổi mật khẩu (Tuỳ chọn)</Typography.Title>
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>

@@ -4,6 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import '../assets/css/style.css';
 import Chatbot from '../components/Chatbot';
 
+const removeAccents = (str) => {
+    return str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+};
+
 const Home = ({ cartCount }) => {
     const [products, setProducts] = useState([]);
     const [category, setCategory] = useState('all');
@@ -23,7 +27,7 @@ const Home = ({ cartCount }) => {
     };
 
     const handleLogout = () => {
-        if (window.confirm("Yến ơi, bạn muốn đăng xuất sao? ☕")) {
+        if (window.confirm(`${userName || 'Bạn'} ơi, bạn muốn đăng xuất sao? ☕`)) {
             localStorage.removeItem('userToken');
             localStorage.removeItem('userName');
             setUserName('');
@@ -146,7 +150,7 @@ const Home = ({ cartCount }) => {
             {/* 5. Danh sách Sản phẩm */}
             <div className="container">
                 <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-                    {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(p => (
+                    {products.filter(p => removeAccents(p.name).includes(removeAccents(searchTerm))).map(p => (
                         <div key={p._id} className="col mb-2">
                             <div className="card h-100 premium-card shadow-sm position-relative" onClick={() => navigate(`/product/${p._id}`)}>
 
