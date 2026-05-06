@@ -17,10 +17,26 @@ const removeAccents = (str) => {
 
 const POSPage = () => {
   const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem("pos_cart");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [optionModal, setOptionModal] = useState({ open: false, product: null });
+  const [isToppingOpen, setIsToppingOpen] = useState(false);
+
+  // Đồng bộ giỏ hàng POS vào localStorage
+  useEffect(() => {
+    localStorage.setItem("pos_cart", JSON.stringify(cart));
+  }, [cart]);
   const [optionForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
+
+  const getSizeExtraPrice = (size) => {
+    if (size === 'S') return 0;
+    if (size === 'L') return 10000;
+    if (size === 'M') return 5000;
+    return 0;
+  };
 
   const filteredProducts = products.filter((product) => {
     const productName = removeAccents(product.name);
@@ -35,33 +51,41 @@ const POSPage = () => {
       .catch(() => alert("Không lấy được danh sách món!"));
   }, []);
 
-  // Thêm món vào giỏ
-  const addToCart = (product) => {
-    setCart(prev => {
-      const found = prev.find(item => item._id === product._id);
-      if (found) {
-        return prev.map(item =>
-          item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
+  // Tăng số lượng
+  const increaseQuantity = (cartItemId) => {
+    setCart(prev =>
+      prev.map(item =>
+        item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
   };
 
-  // Trừ món khỏi giỏ
-  const removeFromCart = (productId) => {
+  // Giảm món khỏi giỏ
+  const decreaseQuantity = (cartItemId) => {
     setCart(prev =>
       prev
         .map(item =>
-          item._id === productId ? { ...item, quantity: item.quantity - 1 } : item
+          item.cartItemId === cartItemId ? { ...item, quantity: item.quantity - 1 } : item
         )
         .filter(item => item.quantity > 0)
     );
   };
 
   // Xóa hẳn món khỏi giỏ
-  const deleteFromCart = (productId) => {
-    setCart(prev => prev.filter(item => item._id !== productId));
+  const deleteFromCart = (cartItemId) => {
+    setCart(prev => prev.filter(item => item.cartItemId !== cartItemId));
+  };
+
+  // Mở modal chỉnh sửa
+  const openEditModal = (item) => {
+    setOptionModal({ open: true, product: item, editMode: true, cartItemId: item.cartItemId });
+    optionForm.setFieldsValue({
+      size: item.options?.size,
+      topping: item.options?.toppings,
+      sugar: item.options?.sugar,
+      ice: item.options?.ice,
+      note: item.note
+    });
   };
 
   // Đặt món
@@ -82,6 +106,7 @@ const POSPage = () => {
       items,
       totalPrice,
       location: "Tại quầy",
+      paymentMethod: "Tiền mặt",
       // status, createdAt: backend tự sinh
     };
     axiosClient.post("/orders", orderData)
@@ -146,7 +171,10 @@ const POSPage = () => {
 
                     <button
                       className="btn btn-sm btn-primary mt-auto"
-                      onClick={() => setOptionModal({ open: true, product })}
+                      onClick={() => {
+                        optionForm.resetFields();
+                        setOptionModal({ open: true, product, editMode: false });
+                      }}
                     >
                       + Thêm
                     </button>
@@ -175,8 +203,8 @@ const POSPage = () => {
                 <div className="text-muted">Chưa có món</div>
               )}
 
-              {cart.map(item => (
-                <div key={item._id} className="d-flex align-items-center mb-3">
+              {cart.map((item, index) => (
+                <div key={item.cartItemId || index} className="d-flex align-items-center mb-3">
                   <img
                     src={item.image ? `http://localhost:5000/images/${item.image}` : "https://via.placeholder.com/45x45?text=No+Image"}
                     width={45}
@@ -185,36 +213,52 @@ const POSPage = () => {
                     alt={item.name}
                   />
 
-                  <div className="flex-grow-1">
-                    <div className="fw-semibold small">{item.name}</div>
+                  <div className="flex-grow-1" style={{ width: "120px" }}>
+                    <div className="fw-semibold small text-truncate">{item.name}</div>
                     {item.options && (
-                      <div className="small text-muted">
-                        {item.options.size && <>Size: {item.options.size} </>}
-                        {item.options.topping && item.options.topping.length > 0 && <>| Topping: {item.options.topping.join(", ")} </>}
-                        {item.options.sugar && <>| Đường: {item.options.sugar} </>}
-                        {item.options.ice && <>| Đá: {item.options.ice} </>}
-                        {item.note && <>| Note: {item.note}</>}
+                      <div className="small text-muted" style={{ fontSize: "0.75rem", lineHeight: "1.2" }}>
+                        {item.options.size && <span>Size: {item.options.size} </span>}
+                        {item.options.toppings && item.options.toppings.length > 0 && <span>| Topping: {item.options.toppings.join(", ")} </span>}
+                        {item.options.sugar && <span>| Đường: {item.options.sugar} </span>}
+                        {item.options.ice && <span>| Đá: {item.options.ice} </span>}
+                        {item.note && <span>| Note: {item.note}</span>}
                       </div>
                     )}
-                    <div className="text-muted small">x{item.quantity}</div>
+                    <div className="d-flex align-items-center mt-1">
+                      <button
+                        className="btn btn-sm btn-outline-secondary px-2 py-0"
+                        onClick={() => decreaseQuantity(item.cartItemId)}
+                        title="Giảm số lượng"
+                      >-</button>
+                      <span className="mx-2 fw-semibold text-muted small">{item.quantity}</span>
+                      <button
+                        className="btn btn-sm btn-outline-primary px-2 py-0"
+                        onClick={() => increaseQuantity(item.cartItemId)}
+                        title="Tăng số lượng"
+                      >+</button>
+                    </div>
                   </div>
 
-                  <div className="fw-bold text-danger me-2">
+                  <div className="fw-bold text-danger mx-2 text-end" style={{ minWidth: "60px" }}>
                     {(item.price * item.quantity).toLocaleString()}đ
                   </div>
 
-                  <button
-                    className="btn btn-sm btn-outline-secondary me-1"
-                    onClick={() => removeFromCart(item._id)}
-                    title="Giảm số lượng"
-                  >-</button>
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => deleteFromCart(item._id)}
-                    title="Xóa khỏi giỏ"
-                  >
-                    <i className="bi bi-trash"></i>
-                  </button>
+                  <div className="d-flex flex-column gap-1">
+                    <button
+                      className="btn btn-sm btn-outline-primary py-0 px-2"
+                      onClick={() => openEditModal(item)}
+                      title="Chỉnh sửa tuỳ chọn"
+                    >
+                      <i className="bi bi-pencil" style={{ fontSize: "0.8rem" }}></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger py-0 px-2"
+                      onClick={() => deleteFromCart(item.cartItemId)}
+                      title="Xóa khỏi giỏ"
+                    >
+                      <i className="bi bi-trash" style={{ fontSize: "0.8rem" }}></i>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -247,45 +291,79 @@ const POSPage = () => {
         onCancel={() => setOptionModal({ open: false, product: null })}
         onOk={() => {
           optionForm.validateFields().then(values => {
-            // Thêm vào giỏ hàng với tuỳ chọn
             const { size, topping, sugar, ice, note } = values;
             const product = optionModal.product;
-            setCart(prev => {
-              return [
+            
+            if (optionModal.editMode) {
+              setCart(prev => prev.map(item => 
+                item.cartItemId === optionModal.cartItemId 
+                  ? {
+                      ...item,
+                      options: { size, toppings: topping || [], sugar, ice },
+                      note,
+                      price: product.price + getSizeExtraPrice(size)
+                    }
+                  : item
+              ));
+            } else {
+              setCart(prev => [
                 ...prev,
                 {
                   ...product,
+                  cartItemId: Date.now() + Math.random().toString(),
                   quantity: 1,
-                  options: {
-                    size,
-                    toppings: topping || [],
-                    sugar,
-                    ice
-                  },
-                  note
+                  options: { size, toppings: topping || [], sugar, ice },
+                  note,
+                  price: product.price + getSizeExtraPrice(size)
                 }
-              ];
-            });
+              ]);
+            }
+            
             setOptionModal({ open: false, product: null });
             optionForm.resetFields();
           });
         }}
-        okText="Thêm vào giỏ"
+        okText={optionModal.editMode ? "Cập nhật" : "Thêm vào giỏ"}
         cancelText="Hủy"
         destroyOnClose
       >
         <Form form={optionForm} layout="vertical">
           {optionModal.product?.sizes?.length > 0 && (
             <Form.Item name="size" label="Size" rules={[{ required: true, message: "Chọn size" }]}>
-              <Select options={optionModal.product.sizes.map(s => ({ label: s, value: s }))} />
+              <Select options={optionModal.product.sizes.map(s => {
+                const finalPrice = optionModal.product.price + getSizeExtraPrice(s);
+                return { 
+                  label: `${s} - ${finalPrice.toLocaleString()}đ`, 
+                  value: s 
+                };
+              })} />
             </Form.Item>
           )}
           {optionModal.product?.toppings?.length > 0 && (
             <Form.Item name="topping" label="Topping">
               <Select
                 mode="multiple"
+                open={isToppingOpen}
+                onDropdownVisibleChange={(open) => setIsToppingOpen(open)}
                 options={optionModal.product.toppings.map(t => ({ label: t, value: t }))}
                 placeholder="Chọn topping (nếu có)"
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 8px', borderTop: '1px solid #f0f0f0' }}>
+                      <button 
+                        type="button"
+                        className="btn btn-sm btn-primary py-0"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsToppingOpen(false);
+                        }}
+                      >
+                        Xong
+                      </button>
+                    </div>
+                  </>
+                )}
               />
             </Form.Item>
           )}
