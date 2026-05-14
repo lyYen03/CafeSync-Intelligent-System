@@ -8,23 +8,25 @@ const {
     updateOrderStatus,
     deleteOrder,
     getOrdersByEmail,
-    cancelOrder // <--- THÊM hàm này vào đây
+    cancelOrder,
+    receiveWebhook // <--- PHẢI CÓ hàm này để xử lý tín hiệu "Đã thanh toán"
 } = require("../controllers/orderController");
 
 // 1. Nhận đơn hàng
 router.post("/", createOrder);
-router.post("/place-order", createOrder);
 
-// 2. Lấy danh sách đơn hàng
+// 2. WEBHOOK - Đây là chìa khóa để tự đổi trạng thái đơn hàng!
+// Route này phải khớp với link Ngrok con dán trên Dashboard PayOS
+router.post("/webhook", receiveWebhook);
+
+// 3. Lấy danh sách & Lịch sử
 router.get("/", getOrders);
-
-// 3. Lấy lịch sử theo Email
 router.get("/user/:email", getOrdersByEmail);
 
-// 4. Hủy đơn (Phải đặt TRÊN cái /:id để tránh trùng lặp route)
-router.get('/cancel/:orderId', cancelOrder); // <--- ĐỔI THÀNH THẾ NÀY
+// 4. Hủy đơn (Xử lý khi khách bấm nút Hủy trên PayOS)
+router.get('/cancel/:orderId', cancelOrder);
 
-// 5. Lấy chi tiết & Cập nhật
+// 5. Chi tiết & Cập nhật
 router.get("/:id", getOrderById);
 router.put("/:id/status", updateOrderStatus);
 router.delete("/:id", deleteOrder);

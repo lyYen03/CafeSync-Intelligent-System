@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Table, Typography, Spin, Button, Modal, Form, Input, InputNumber, message, Popconfirm } from "antd";
+import { Table, Typography, Spin, Button, Modal, Form, Input, InputNumber, message, Popconfirm, Tag } from "antd";
+import { EditOutlined, DeleteOutlined, WarningOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const removeAccents = (str) => {
   if (!str) return "";
@@ -79,8 +80,20 @@ const IngredientManagementPage = () => {
   };
 
   const columns = [
-    { title: "Tên nguyên liệu", dataIndex: "name", key: "name" },
-    { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
+    { title: "Tên nguyên liệu", dataIndex: "name", key: "name", render: (text) => <Text strong>{text}</Text> },
+    { 
+      title: "Số lượng", 
+      dataIndex: "quantity", 
+      key: "quantity",
+      render: (v, record) => (
+        <span style={{ 
+          color: v <= record.minStock ? "#cf1322" : "inherit", 
+          fontWeight: v <= record.minStock ? "bold" : "normal" 
+        }}>
+          {v} {v <= record.minStock && <WarningOutlined style={{ marginLeft: 4 }} />}
+        </span>
+      )
+    },
     { title: "Đơn vị", dataIndex: "unit", key: "unit" },
     { title: "Tồn tối thiểu", dataIndex: "minStock", key: "minStock" },
     { title: "Giá", dataIndex: "price", key: "price", render: v => v?.toLocaleString("vi-VN") + " VND" },
@@ -88,17 +101,17 @@ const IngredientManagementPage = () => {
       title: "Thao tác",
       key: "actions",
       render: (_, record) => (
-        <>
-          <Button size="small" onClick={() => openModal(record)} style={{ marginRight: 8 }}>Sửa</Button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button size="small" icon={<EditOutlined />} onClick={() => openModal(record)}>Sửa</Button>
           <Popconfirm
             title="Bạn chắc chắn muốn xóa?"
             onConfirm={() => handleDelete(record._id)}
             okText="Xóa"
             cancelText="Hủy"
           >
-            <Button size="small" danger>Xóa</Button>
+            <Button size="small" danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
-        </>
+        </div>
       ),
     },
   ];

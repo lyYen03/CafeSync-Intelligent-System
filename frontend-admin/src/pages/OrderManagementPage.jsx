@@ -7,13 +7,15 @@ const { Title } = Typography;
 const statusColors = {
   "Chờ xác nhận": "orange",
   "Đang pha chế": "blue",
-  "Hoàn thành": "green",
+  "Hoàn thành": "cyan",
+  "Đã thanh toán": "green",
 };
 
 const statusOptions = [
   { value: "Chờ xác nhận", label: "Chờ xác nhận" },
   { value: "Đang pha chế", label: "Đang pha chế" },
   { value: "Hoàn thành", label: "Hoàn thành" },
+  { value: "Đã thanh toán", label: "Đã thanh toán" },
 ];
 
 const OrderManagementPage = () => {
@@ -29,16 +31,23 @@ const OrderManagementPage = () => {
   });
 
   // Load orders
-  const fetchOrders = () => {
-    setLoading(true);
+  const fetchOrders = (silent = false) => {
+    if (!silent) setLoading(true);
     axios.get("http://localhost:5000/api/orders")
       .then(res => setOrders(res.data))
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
+      .catch(() => { if (!silent) setOrders([]); })
+      .finally(() => { if (!silent) setLoading(false); });
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(); // load lần đầu
+
+    // Thiết lập Polling fetch ngầm mỗi 5 giây
+    const interval = setInterval(() => {
+      fetchOrders(true);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Open modal to update status

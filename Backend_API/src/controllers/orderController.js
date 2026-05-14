@@ -18,15 +18,17 @@ const createOrder = async (req, res) => {
         status: "Chờ xác nhận",
         createdAt: Date.now(),
       });
+
+      // Bắn tín hiệu socket.io cho Admin
+      const io = req.app.get('io');
+      if (io) io.emit('new_order', newOrder);
+
       return res.status(201).json(newOrder);
     }
 
     // --- TRƯỜNG HỢP 2: THANH TOÁN ONLINE (PAYOS) ---
     try {
-      const PayOSPkg = require("@payos/node");
-      const PayOS = PayOSPkg.default || (typeof PayOSPkg === 'function' ? PayOSPkg : null);
-
-      if (!PayOS) throw new Error("Không tìm thấy Constructor PayOS.");
+      const PayOS = require("@payos/node");
 
       const payosInstance = new PayOS(
         process.env.PAYOS_CLIENT_ID,
@@ -39,8 +41,7 @@ const createOrder = async (req, res) => {
       const paymentData = {
         orderCode: orderCode,
         amount: totalPrice,
-        description: `Thanh toan don ${finalOrderID}`,
-        // ĐÃ CHỈNH VỀ CỔNG 3001 CHO KHÁCH
+        description: `TT don ${finalOrderID.slice(-8)}`, // Viết tắt và chỉ lấy 8 số cuối của ID cho ngắn
         returnUrl: `http://localhost:3001/track-order`,
         cancelUrl: `http://localhost:5000/api/orders/cancel/${finalOrderID}`,
       };
@@ -57,6 +58,10 @@ const createOrder = async (req, res) => {
         status: "Chờ thanh toán",
         createdAt: Date.now(),
       });
+
+      // Bắn tín hiệu socket.io cho Admin (để biết có đơn đang đợi tiền)
+      const io = req.app.get('io');
+      if (io) io.emit('new_order', pendingOrder);
 
       return res.status(200).json({
         _id: pendingOrder._id,
@@ -75,7 +80,7 @@ const createOrder = async (req, res) => {
   }
 };
 
-// 📌 2. Lấy tất cả order (Thường cổng 3000 sẽ gọi cái này nhiều nhất)
+// 📌 2. Lấy tất cả đơn hàng
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -85,7 +90,7 @@ const getOrders = async (req, res) => {
   }
 };
 
-// 📌 3. Lấy lịch sử đơn hàng theo định danh
+// 📌 3. Lấy lịch sử theo Email
 const getOrdersByEmail = async (req, res) => {
   try {
     const identifier = req.params.email;
@@ -96,7 +101,7 @@ const getOrdersByEmail = async (req, res) => {
   }
 };
 
-// 📌 4. Lấy order theo ID
+// 📌 4. Lấy chi tiết đơn theo ID
 const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -107,15 +112,11 @@ const getOrderById = async (req, res) => {
   }
 };
 
-// 📌 5. Cập nhật trạng thái (Dành cho cổng 3000 duyệt đơn)
+// 📌 5. Cập nhật trạng thái (Tiếp nhận/Hoàn thành)
 const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const updated = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+    const updated = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -136,22 +137,44 @@ const deleteOrder = async (req, res) => {
 const cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
-    // Tìm và xóa sổ ngay
-    const deletedOrder = await Order.findOneAndDelete({ orderID: orderId });
-
-    if (deletedOrder) {
-      console.log(`🗑️ Đã xóa vĩnh viễn đơn hàng hủy: ${orderId}`);
-    }
-
-    // Redirect về cổng 3001 của khách
+    await Order.findOneAndDelete({ orderID: orderId });
+    console.log(`🗑️ Đã xóa vĩnh viễn đơn hàng hủy: ${orderId}`);
     res.redirect(`http://localhost:3001/cart?status=cancelled`);
   } catch (error) {
-    console.error("Lỗi khi xóa đơn hủy:", error);
     res.status(500).json({ message: "Không thể xử lý yêu cầu xóa đơn." });
   }
 };
+// 📌 8. Nhận Webhook từ PayOS để tự động cập nhật trạng thái
+const receiveWebhook = async (req, res) => {
+  try {
+    console.log("🔔 Đã nhận tín hiệu từ PayOS:", req.body);
+    // Trong hàm receiveWebhook (orderController.js)
+    const { data } = req.body;
+    if (data) {
+      const orderCodeStr = data.orderCode.toString();
+      // Tìm đơn hàng có orderID chứa dãy số orderCode từ PayOS gửi về
+      const updatedOrder = await Order.findOneAndUpdate(
+        { orderID: { $regex: orderCodeStr } },
+        { status: "Chờ xác nhận" },
+        { new: true }
+      );
 
-// ĐƯA TẤT CẢ VÀO ĐÂY ĐỂ EXPORT MỘT LẦN
+      if (updatedOrder) {
+        console.log(`✅ Tuyệt vời! Đơn ${updatedOrder.orderID} đã tự động đổi sang Chờ xác nhận`);
+        // Bắn socket cho admin thấy luôn
+        const io = req.app.get('io');
+        if (io) io.emit('order_updated', updatedOrder);
+      }
+    }
+
+    // Luôn trả về 200 cho PayOS để họ không gửi lại tín hiệu nữa
+    return res.status(200).json({ message: "Webhook received" });
+  } catch (error) {
+    console.error("Lỗi xử lý Webhook:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrders,
@@ -159,5 +182,6 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   deleteOrder,
-  cancelOrder, // <--- ĐẢM BẢO CÓ EM NÀY
+  cancelOrder,
+  receiveWebhook,
 };

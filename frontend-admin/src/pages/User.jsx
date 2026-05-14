@@ -81,7 +81,7 @@ const UserManagementPage = () => {
   };
 
   const columns = [
-    { title: "Tên đăng nhập", dataIndex: "username", key: "username" },
+    { title: "Email", dataIndex: "email", key: "email" },
     { title: "Tên", dataIndex: "name", key: "name" },
     { title: "Vai trò", dataIndex: "role", key: "role" },
     { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt", render: v => new Date(v).toLocaleString() },
@@ -146,11 +146,14 @@ const UserManagementPage = () => {
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="Tên đăng nhập"
-            name="username"
-            rules={[{ required: true, message: "Bắt buộc nhập tên đăng nhập" }]}
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Bắt buộc nhập email" },
+              { type: "email", message: "Email không hợp lệ" },
+            ]}
           >
-            <Input />
+            <Input placeholder="example@email.com" />
           </Form.Item>
           {!editingUser && (
             <Form.Item
@@ -172,7 +175,7 @@ const UserManagementPage = () => {
             <Select>
               <Select.Option value="admin">Admin</Select.Option>
               <Select.Option value="nhanvien">Nhân viên</Select.Option>
-              <Select.Option value="user">User</Select.Option>
+              <Select.Option value="customer">Customer</Select.Option>
             </Select>
           </Form.Item>
         </Form>

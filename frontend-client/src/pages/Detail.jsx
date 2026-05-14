@@ -120,9 +120,18 @@ const Detail = () => {
                 <div className="option-section">
                     <span className="premium-section-title">Kích cỡ ly</span>
                     <div className="capsule-selector">
-                        {product.sizes?.map(s => (
-                            <div key={s} className={`flex-grow-1 capsule-item ${options.size === s ? 'active' : ''}`} onClick={() => setOptions({ ...options, size: s })}>{s}</div>
-                        ))}
+                        {product.sizes?.map(s => {
+                            let extra = 0;
+                            if (s === 'M') extra = 5000;
+                            else if (s === 'L') extra = 10000;
+                            const finalPrice = product.price + extra;
+                            return (
+                                <div key={s} className={`flex-grow-1 capsule-item ${options.size === s ? 'active' : ''}`} onClick={() => setOptions({ ...options, size: s })}>
+                                    <div style={{ fontWeight: '600' }}>{s}</div>
+                                    <div style={{ fontSize: '0.85rem', opacity: 0.85 }}>{finalPrice.toLocaleString()}đ</div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

@@ -9,12 +9,12 @@ const jwt = require("jsonwebtoken");
 // ĐĂNG KÝ
 exports.registerUser = async (req, res) => {
   try {
-    const { name, username, password, phone } = req.body; // Dùng username cho đồng bộ với Tài
+    const { name, email, password, phone } = req.body;
 
-    const userExists = await User.findOne({ username });
-    if (userExists) return res.status(400).json({ message: "Tên đăng nhập đã tồn tại" });
+    const userExists = await User.findOne({ email });
+    if (userExists) return res.status(400).json({ message: "Email đã tồn tại" });
 
-    const user = await User.create({ name, username, password, phone });
+    const user = await User.create({ name, email, password, phone });
     res.status(201).json({ message: "Đăng ký thành công!", userId: user._id });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -24,8 +24,8 @@ exports.registerUser = async (req, res) => {
 // ĐĂNG NHẬP (Cho khách)
 exports.loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
       const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -33,12 +33,12 @@ exports.loginUser = async (req, res) => {
       res.json({
         _id: user._id,
         name: user.name,
-        username: user.username,
+        email: user.email,
         role: user.role,
         token: token
       });
     } else {
-      res.status(401).json({ message: "Tên đăng nhập hoặc mật khẩu không đúng" });
+      res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -65,12 +65,12 @@ exports.getUserById = async (req, res) => {
 // Tạo user mới (Admin tạo)
 exports.createUser = async (req, res) => {
   try {
-    const { username, password, name, role } = req.body;
+    const { email, password, name, role } = req.body;
 
-    const exist = await User.findOne({ username });
-    if (exist) return res.status(400).json({ message: "Username đã tồn tại" });
+    const exist = await User.findOne({ email });
+    if (exist) return res.status(400).json({ message: "Email đã tồn tại" });
 
-    const user = new User({ username, password, name, role });
+    const user = new User({ email, password, name, role });
     await user.save();
 
     res.json({
@@ -86,10 +86,10 @@ exports.createUser = async (req, res) => {
 // Cập nhật user
 exports.updateUser = async (req, res) => {
   try {
-    const { username, name, role } = req.body;
+    const { email, name, role } = req.body;
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { username, name, role },
+      { email, name, role },
       { new: true }
     ).select("-password");
     res.json(user);
