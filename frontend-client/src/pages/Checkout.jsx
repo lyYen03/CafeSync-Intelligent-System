@@ -36,7 +36,7 @@ const Checkout = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const finalOrderID = `CFS${Math.floor(Math.random() * 900000 + 100000)}`;
+        const finalOrderID = `CFS${Date.now().toString().slice(-8)}`;
         const savedName = localStorage.getItem('userName');
         const savedEmail = localStorage.getItem('userEmail');
 

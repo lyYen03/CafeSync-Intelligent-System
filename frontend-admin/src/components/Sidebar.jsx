@@ -1,4 +1,4 @@
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Typography, Divider } from "antd";
 import {
   AppstoreOutlined,
   UserOutlined,
@@ -7,79 +7,128 @@ import {
   FileTextOutlined,
   LineChartOutlined,
   ShoppingCartOutlined,
-  HomeOutlined
+  DashboardOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const { Sider } = Layout;
+const { Title, Text } = Typography;
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 1. LẤY THÔNG TIN USER VÀ CHUYỂN ROLE VỀ VIẾT THƯỜNG
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user.role ? user.role.toLowerCase() : "";
 
-  // 2. KHỞI TẠO MENU VỚI CÁC MỤC DÙNG CHUNG
-  const items = [
+  const menuItems = [
     {
       key: "/",
-      icon: <HomeOutlined />,
-      label: "Trang chủ",
+      icon: <DashboardOutlined />,
+      label: "Dashboard",
       onClick: () => navigate("/"),
     },
     {
       key: "/orders",
       icon: <FileTextOutlined />,
-      label: "Quản lý Đơn hàng",
+      label: "Đơn hàng",
       onClick: () => navigate("/orders"),
     },
   ];
 
-  // 3. PHÂN CHIA QUYỀN HẠN RẠCH RÒI
   if (role === "admin") {
-    // Admin: Quản trị hệ thống, KHÔNG bán hàng
-    items.push(
-      { key: "/CategoryPage", icon: <AppstoreOutlined />, label: "Quản lý Danh mục", onClick: () => navigate("/CategoryPage") },
-      { key: "/products", icon: <CoffeeOutlined />, label: "Quản lý Sản phẩm", onClick: () => navigate("/products") },
-      { key: "/ingredients", icon: <DatabaseOutlined />, label: "Quản lý Nguyên liệu", onClick: () => navigate("/ingredients") },
-      { key: "/reports", icon: <LineChartOutlined />, label: "Báo cáo doanh thu", onClick: () => navigate("/reports") },
-      { key: "/users", icon: <UserOutlined />, label: "Quản lý Người dùng", onClick: () => navigate("/users") }
+    menuItems.push(
+      { type: "divider" },
+      { label: "QUẢN TRỊ", type: "group", children: [
+        { key: "/CategoryPage", icon: <AppstoreOutlined />, label: "Danh mục", onClick: () => navigate("/CategoryPage") },
+        { key: "/products", icon: <CoffeeOutlined />, label: "Sản phẩm", onClick: () => navigate("/products") },
+        { key: "/ingredients", icon: <DatabaseOutlined />, label: "Kho hàng", onClick: () => navigate("/ingredients") },
+        { key: "/users", icon: <UserOutlined />, label: "Nhân sự", onClick: () => navigate("/users") },
+      ]},
+      { type: "divider" },
+      { label: "PHÂN TÍCH", type: "group", children: [
+        { key: "/reports", icon: <LineChartOutlined />, label: "Báo cáo", onClick: () => navigate("/reports") },
+      ]}
     );
   } else if (role === "nhanvien") {
-    // Nhân viên: Chuyên trách bán hàng tại quầy (POS)
-    items.push({
+    menuItems.push({
       key: "/pos",
       icon: <ShoppingCartOutlined />,
-      label: "Bán tại quầy (POS)",
+      label: "Bán hàng (POS)",
       onClick: () => navigate("/pos"),
     });
   }
 
   return (
     <Sider
-      width={220}
+      trigger={null}
+      collapsible
+      collapsed={collapsed}
+      width={240}
+      theme="dark"
       style={{
-        minHeight: "100vh",
-        background: "#151d2a",
-        color: "#fff",
+        overflow: "auto",
+        height: "100vh",
         position: "fixed",
         left: 0,
         top: 0,
         bottom: 0,
+        backgroundColor: "#001529",
+        boxShadow: "2px 0 8px rgba(0,0,0,0.15)",
+        zIndex: 1001,
       }}
     >
-      <div style={{ padding: 24, fontWeight: "bold", fontSize: 22, color: "#fff", textAlign: "center", letterSpacing: "1px" }}>
-        CafeSync
+      <div style={{ 
+        height: 64, 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        padding: collapsed ? "0" : "0 16px",
+        background: "rgba(255, 255, 255, 0.05)",
+        marginBottom: 8
+      }}>
+        <div style={{ 
+          width: 32, 
+          height: 32, 
+          background: "#1677ff", 
+          borderRadius: 6,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 18,
+          marginRight: collapsed ? 0 : 12
+        }}>☕</div>
+        {!collapsed && (
+          <Title level={4} style={{ color: "#fff", margin: 0, fontSize: 18, letterSpacing: 1 }}>
+            CafeSync
+          </Title>
+        )}
       </div>
+      
       <Menu
         theme="dark"
         mode="inline"
         selectedKeys={[location.pathname]}
-        style={{ background: "#151d2a", borderRight: 0 }}
-        items={items}
+        style={{ backgroundColor: "transparent", borderRight: 0 }}
+        items={menuItems}
       />
+      
+      {!collapsed && (
+        <div style={{ position: "absolute", bottom: 16, width: "100%", padding: "0 16px" }}>
+          <div style={{ 
+            background: "rgba(255,255,255,0.05)", 
+            padding: "12px", 
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            gap: 12
+          }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#52c41a" }} />
+            <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12 }}>System Online</Text>
+          </div>
+        </div>
+      )}
     </Sider>
   );
 };

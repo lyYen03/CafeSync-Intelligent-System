@@ -1,6 +1,32 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../services/axiosClient";
-import { Modal, Form, Select, Input } from "antd";
+import { 
+  Modal, 
+  Form, 
+  Select, 
+  Input, 
+  Button, 
+  Row, 
+  Col, 
+  Card, 
+  Typography, 
+  Space, 
+  Divider, 
+  Empty, 
+  message,
+  Checkbox,
+  Tag 
+} from "antd";
+import { 
+  PlusOutlined, 
+  ShoppingCartOutlined, 
+  SearchOutlined, 
+  DeleteOutlined, 
+  EditOutlined,
+  MinusOutlined
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 const removeAccents = (str) => {
   if (!str) return "";
@@ -22,21 +48,18 @@ const POSPage = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [optionModal, setOptionModal] = useState({ open: false, product: null });
-  const [isToppingOpen, setIsToppingOpen] = useState(false);
-
-  // Đồng bộ giỏ hàng POS vào localStorage
-  useEffect(() => {
-    localStorage.setItem("pos_cart", JSON.stringify(cart));
-  }, [cart]);
   const [optionForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
 
-  const getSizeExtraPrice = (size) => {
-    if (size === 'S') return 0;
-    if (size === 'L') return 10000;
-    if (size === 'M') return 5000;
-    return 0;
-  };
+  useEffect(() => {
+    localStorage.setItem("pos_cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    axiosClient.get("/products")
+      .then(res => setProducts(res.data))
+      .catch(() => message.error("Không lấy được danh sách món!"));
+  }, []);
 
   const filteredProducts = products.filter((product) => {
     const productName = removeAccents(product.name);
@@ -44,39 +67,23 @@ const POSPage = () => {
     return productName.includes(searchKeyword);
   });
 
-  // Lấy danh sách sản phẩm
-  useEffect(() => {
-    axiosClient.get("/products")
-      .then(res => setProducts(res.data))
-      .catch(() => alert("Không lấy được danh sách món!"));
-  }, []);
-
-  // Tăng số lượng
-  const increaseQuantity = (cartItemId) => {
-    setCart(prev =>
-      prev.map(item =>
-        item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  const getSizeExtraPrice = (size) => {
+    if (size === 'S') return 0;
+    if (size === 'M') return 5000;
+    if (size === 'L') return 10000;
+    return 0;
   };
 
-  // Giảm món khỏi giỏ
-  const decreaseQuantity = (cartItemId) => {
-    setCart(prev =>
-      prev
-        .map(item =>
-          item.cartItemId === cartItemId ? { ...item, quantity: item.quantity - 1 } : item
-        )
-        .filter(item => item.quantity > 0)
-    );
+  const updateQuantity = (cartItemId, delta) => {
+    setCart(prev => prev.map(item => 
+      item.cartItemId === cartItemId ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
+    ).filter(item => item.quantity > 0));
   };
 
-  // Xóa hẳn món khỏi giỏ
   const deleteFromCart = (cartItemId) => {
     setCart(prev => prev.filter(item => item.cartItemId !== cartItemId));
   };
 
-  // Mở modal chỉnh sửa
   const openEditModal = (item) => {
     setOptionModal({ open: true, product: item, editMode: true, cartItemId: item.cartItemId });
     optionForm.setFieldsValue({
@@ -88,16 +95,15 @@ const POSPage = () => {
     });
   };
 
-  // Đặt món
   const handleOrder = () => {
-    if (cart.length === 0) return alert("Chưa chọn món!");
-    const orderID = "POS" + Date.now();
+    if (cart.length === 0) return message.warning("Chưa chọn món!");
+    const orderID = "CFS" + Date.now().toString().slice(-8); // Unified prefix
     const items = cart.map(item => ({
       id_product: item._id,
       name: item.name,
       quantity: item.quantity,
       price: item.price,
-      options: item.options || {}, // truyền đầy đủ options
+      options: item.options || {},
       note: item.note || ""
     }));
     const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -107,282 +113,202 @@ const POSPage = () => {
       totalPrice,
       location: "Tại quầy",
       paymentMethod: "Tiền mặt",
-      // status, createdAt: backend tự sinh
     };
     axiosClient.post("/orders", orderData)
       .then(() => {
-        alert("Đặt món thành công!");
+        message.success("Đặt món thành công!");
         setCart([]);
       })
-      .catch((err) => {
-        alert("Đặt món thất bại!");
-        console.error(err);
-      });
+      .catch(() => message.error("Đặt món thất bại!"));
   };
 
+  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
   return (
-    <div className="container-fluid py-3">
-      {/* CSS HOVER trực tiếp */}
-      <style>
-        {`
-        .product-card {
-          transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
-        }
-        .product-card:hover {
-          box-shadow: 0 0 0 3px #0d6efd33, 0 4px 24px rgba(0,0,0,0.10);
-          border: 2px solid #0d6efd;
-          transform: translateY(-4px) scale(1.03);
-          cursor: pointer;
-        }
-      `}
-      </style>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="fw-bold m-0">🛒 POS - Đặt món tại quầy</h3>
-        <Input.Search
-          placeholder="Tìm kiếm món theo tên..."
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ width: 300 }}
-        />
-      </div>
+    <div style={{ padding: '0 8px' }}>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={16}>
+          <Card 
+            title={
+              <Space split={<Divider type="vertical" />}>
+                <Title level={4} style={{ margin: 0 }}>Menu Sản phẩm</Title>
+                <Input 
+                  placeholder="Tìm món..." 
+                  prefix={<SearchOutlined />} 
+                  onChange={e => setSearchText(e.target.value)}
+                  style={{ width: 250 }}
+                  allowClear
+                />
+              </Space>
+            }
+            bordered={false}
+          >
+            <Row gutter={[16, 16]}>
+              {filteredProducts.map(product => (
+                <Col xs={12} sm={8} md={6} key={product._id}>
+                  <Card
+                    hoverable
+                    cover={
+                      <img
+                        alt={product.name}
+                        src={product.image ? `http://localhost:5000/images/${product.image}` : "https://via.placeholder.com/150"}
+                        style={{ height: 120, objectFit: "cover" }}
+                      />
+                    }
+                    bodyStyle={{ padding: '12px' }}
+                    onClick={() => {
+                      optionForm.resetFields();
+                      setOptionModal({ open: true, product, editMode: false });
+                    }}
+                  >
+                    <Card.Meta 
+                      title={<Text strong style={{ fontSize: 13 }}>{product.name}</Text>} 
+                      description={<Text type="danger" strong>{product.price?.toLocaleString()}đ</Text>} 
+                    />
+                    <Button 
+                      type="primary" 
+                      shape="circle" 
+                      icon={<PlusOutlined />} 
+                      size="small"
+                      style={{ position: 'absolute', right: 8, bottom: 8 }}
+                    />
+                  </Card>
+                </Col>
+              ))}
+              {filteredProducts.length === 0 && <Col span={24}><Empty /></Col>}
+            </Row>
+          </Card>
+        </Col>
 
-      <div className="row">
-        {/* DANH SÁCH MÓN */}
-        <div className="col-lg-8">
-          <div className="row g-3">
-            {filteredProducts.map(product => (
-              <div className="col-6 col-md-4 col-lg-3" key={product._id}>
-                <div className="card h-100 border-0 shadow-sm product-card">
-                  <img
-                    src={product.image ? `http://localhost:5000/images/${product.image}` : "https://via.placeholder.com/300x200?text=No+Image"}
-                    className="card-img-top"
-                    alt={product.name}
-                    style={{ height: 140, objectFit: "cover" }}
-                  />
-
-                  <div className="card-body d-flex flex-column p-2">
-                    <div className="fw-semibold small text-truncate">
-                      {product.name}
-                    </div>
-
-                    <div className="text-danger fw-bold mb-2">
-                      {product.price?.toLocaleString()}đ
-                    </div>
-
-                    <button
-                      className="btn btn-sm btn-primary mt-auto"
-                      onClick={() => {
-                        optionForm.resetFields();
-                        setOptionModal({ open: true, product, editMode: false });
-                      }}
-                    >
-                      + Thêm
-                    </button>
-                  </div>
-                </div>
+        <Col xs={24} lg={8}>
+          <Card 
+            title={<Title level={4} style={{ margin: 0 }}><ShoppingCartOutlined /> Giỏ hàng</Title>}
+            bodyStyle={{ padding: 0 }}
+            bordered={false}
+            actions={[
+              <div style={{ padding: '0 24px', textAlign: 'right' }}>
+                <Title level={3} type="danger" style={{ margin: 0 }}>{totalAmount.toLocaleString()}đ</Title>
+                <Button type="primary" block size="large" onClick={handleOrder} style={{ marginTop: 12, height: 48, fontWeight: 'bold' }}>
+                  XÁC NHẬN THANH TOÁN
+                </Button>
               </div>
-            ))}
-
-            {filteredProducts.length === 0 && (
-              <div className="text-center text-muted py-5">
-                Không có sản phẩm
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* GIỎ HÀNG */}
-        <div className="col-lg-4">
-          <div className="card shadow-sm border-0">
-            <div className="card-header fw-bold">
-              🧾 Giỏ hàng
-            </div>
-
-            <div className="card-body" style={{ maxHeight: 500, overflowY: "auto" }}>
-              {cart.length === 0 && (
-                <div className="text-muted">Chưa có món</div>
-              )}
-
-              {cart.map((item, index) => (
-                <div key={item.cartItemId || index} className="d-flex align-items-center mb-3">
-                  <img
-                    src={item.image ? `http://localhost:5000/images/${item.image}` : "https://via.placeholder.com/45x45?text=No+Image"}
-                    width={45}
-                    height={45}
-                    style={{ borderRadius: 8, objectFit: "cover", marginRight: 10 }}
+            ]}
+          >
+            <div style={{ maxHeight: 'calc(100vh - 350px)', overflowY: 'auto', padding: '12px 24px' }}>
+              {cart.map((item) => (
+                <div key={item.cartItemId} style={{ marginBottom: 16, display: 'flex', gap: 12 }}>
+                  <img 
+                    src={item.image ? `http://localhost:5000/images/${item.image}` : "https://via.placeholder.com/50"} 
+                    style={{ width: 50, height: 50, borderRadius: 8, objectFit: 'cover' }}
                     alt={item.name}
                   />
-
-                  <div className="flex-grow-1" style={{ width: "120px" }}>
-                    <div className="fw-semibold small text-truncate">{item.name}</div>
-                    {item.options && (
-                      <div className="small text-muted" style={{ fontSize: "0.75rem", lineHeight: "1.2" }}>
-                        {item.options.size && <span>Size: {item.options.size} </span>}
-                        {item.options.toppings && item.options.toppings.length > 0 && <span>| Topping: {item.options.toppings.join(", ")} </span>}
-                        {item.options.sugar && <span>| Đường: {item.options.sugar} </span>}
-                        {item.options.ice && <span>| Đá: {item.options.ice} </span>}
-                        {item.note && <span>| Note: {item.note}</span>}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Text strong style={{ fontSize: 14 }}>{item.name}</Text>
+                      <Text strong>{(item.price * item.quantity).toLocaleString()}đ</Text>
+                    </div>
+                    <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+                      Size {item.options?.size} | {item.options?.sugar} đường | {item.options?.ice} đá
+                    </Text>
+                    {item.options?.toppings?.length > 0 && (
+                      <div style={{ marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {item.options.toppings.map(t => <Tag key={t} color="blue" style={{ fontSize: 9, margin: 0 }}>{t}</Tag>)}
                       </div>
                     )}
-                    <div className="d-flex align-items-center mt-1">
-                      <button
-                        className="btn btn-sm btn-outline-secondary px-2 py-0"
-                        onClick={() => decreaseQuantity(item.cartItemId)}
-                        title="Giảm số lượng"
-                      >-</button>
-                      <span className="mx-2 fw-semibold text-muted small">{item.quantity}</span>
-                      <button
-                        className="btn btn-sm btn-outline-primary px-2 py-0"
-                        onClick={() => increaseQuantity(item.cartItemId)}
-                        title="Tăng số lượng"
-                      >+</button>
+                    {item.note && (
+                      <Text type="warning" style={{ fontSize: 10, fontStyle: 'italic', display: 'block', marginTop: 4 }}>
+                         📝 Ghi chú: {item.note}
+                      </Text>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                      <Space size="small">
+                        <Button size="small" icon={<MinusOutlined />} onClick={() => updateQuantity(item.cartItemId, -1)} />
+                        <Text strong>{item.quantity}</Text>
+                        <Button size="small" icon={<PlusOutlined />} onClick={() => updateQuantity(item.cartItemId, 1)} />
+                      </Space>
+                      <Space size="small">
+                        <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openEditModal(item)} />
+                        <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => deleteFromCart(item.cartItemId)} />
+                      </Space>
                     </div>
-                  </div>
-
-                  <div className="fw-bold text-danger mx-2 text-end" style={{ minWidth: "60px" }}>
-                    {(item.price * item.quantity).toLocaleString()}đ
-                  </div>
-
-                  <div className="d-flex flex-column gap-1">
-                    <button
-                      className="btn btn-sm btn-outline-primary py-0 px-2"
-                      onClick={() => openEditModal(item)}
-                      title="Chỉnh sửa tuỳ chọn"
-                    >
-                      <i className="bi bi-pencil" style={{ fontSize: "0.8rem" }}></i>
-                    </button>
-                    <button
-                      className="btn btn-sm btn-outline-danger py-0 px-2"
-                      onClick={() => deleteFromCart(item.cartItemId)}
-                      title="Xóa khỏi giỏ"
-                    >
-                      <i className="bi bi-trash" style={{ fontSize: "0.8rem" }}></i>
-                    </button>
                   </div>
                 </div>
               ))}
+              {cart.length === 0 && <Empty description="Giỏ hàng trống" style={{ margin: '40px 0' }} />}
             </div>
+          </Card>
+        </Col>
+      </Row>
 
-            {cart.length > 0 && (
-              <div className="card-footer">
-                <div className="d-flex justify-content-between fw-bold mb-2">
-                  <span>Tổng:</span>
-                  <span className="text-danger">
-                    {cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString()}đ
-                  </span>
-                </div>
-
-                <button
-                  className="btn btn-success w-100"
-                  onClick={handleOrder}
-                >
-                  ✅ Xác nhận
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* MODAL TUỲ CHỌN SẢN PHẨM */}
       <Modal
         open={optionModal.open}
-        title={optionModal.product?.name}
+        title={<Text strong style={{ fontSize: 18 }}>{optionModal.product?.name}</Text>}
         onCancel={() => setOptionModal({ open: false, product: null })}
         onOk={() => {
           optionForm.validateFields().then(values => {
             const { size, topping, sugar, ice, note } = values;
             const product = optionModal.product;
+            const finalPrice = product.price + getSizeExtraPrice(size);
             
             if (optionModal.editMode) {
               setCart(prev => prev.map(item => 
                 item.cartItemId === optionModal.cartItemId 
-                  ? {
-                      ...item,
-                      options: { size, toppings: topping || [], sugar, ice },
-                      note,
-                      price: product.price + getSizeExtraPrice(size)
-                    }
+                  ? { ...item, options: { size, toppings: topping || [], sugar, ice }, note, price: finalPrice }
                   : item
               ));
             } else {
-              setCart(prev => [
-                ...prev,
-                {
-                  ...product,
-                  cartItemId: Date.now() + Math.random().toString(),
-                  quantity: 1,
-                  options: { size, toppings: topping || [], sugar, ice },
-                  note,
-                  price: product.price + getSizeExtraPrice(size)
-                }
-              ]);
+              setCart(prev => [...prev, {
+                ...product,
+                cartItemId: Date.now() + Math.random().toString(),
+                quantity: 1,
+                options: { size, toppings: topping || [], sugar, ice },
+                note,
+                price: finalPrice
+              }]);
             }
-            
             setOptionModal({ open: false, product: null });
             optionForm.resetFields();
           });
         }}
         okText={optionModal.editMode ? "Cập nhật" : "Thêm vào giỏ"}
-        cancelText="Hủy"
         destroyOnClose
       >
-        <Form form={optionForm} layout="vertical">
-          {optionModal.product?.sizes?.length > 0 && (
-            <Form.Item name="size" label="Size" rules={[{ required: true, message: "Chọn size" }]}>
-              <Select options={optionModal.product.sizes.map(s => {
-                const finalPrice = optionModal.product.price + getSizeExtraPrice(s);
-                return { 
-                  label: `${s} - ${finalPrice.toLocaleString()}đ`, 
-                  value: s 
-                };
-              })} />
-            </Form.Item>
-          )}
-          {optionModal.product?.toppings?.length > 0 && (
-            <Form.Item name="topping" label="Topping">
-              <Select
-                mode="multiple"
-                open={isToppingOpen}
-                onDropdownVisibleChange={(open) => setIsToppingOpen(open)}
-                options={optionModal.product.toppings.map(t => ({ label: t, value: t }))}
-                placeholder="Chọn topping (nếu có)"
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 8px', borderTop: '1px solid #f0f0f0' }}>
-                      <button 
-                        type="button"
-                        className="btn btn-sm btn-primary py-0"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setIsToppingOpen(false);
-                        }}
-                      >
-                        Xong
-                      </button>
-                    </div>
-                  </>
-                )}
-              />
-            </Form.Item>
-          )}
-          {optionModal.product?.sugarOptions?.length > 0 && (
-            <Form.Item name="sugar" label="Mức đường" rules={[{ required: true, message: "Chọn mức đường" }]}>
-              <Select options={optionModal.product.sugarOptions.map(s => ({ label: s, value: s }))} />
-            </Form.Item>
-          )}
-          {optionModal.product?.iceOptions?.length > 0 && (
-            <Form.Item name="ice" label="Mức đá" rules={[{ required: true, message: "Chọn mức đá" }]}>
-              <Select options={optionModal.product.iceOptions.map(i => ({ label: i, value: i }))} />
-            </Form.Item>
-          )}
+        <Form form={optionForm} layout="vertical" initialValues={{ sugar: "100%", ice: "100%", size: "S" }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="size" label="Kích cỡ" rules={[{ required: true }]}>
+                <Select options={optionModal.product?.sizes?.map(s => ({ label: `${s} (+${getSizeExtraPrice(s).toLocaleString()}đ)`, value: s }))} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="sugar" label="Mức đường">
+                <Select options={optionModal.product?.sugarOptions?.map(s => ({ label: s, value: s }))} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="ice" label="Mức đá">
+                <Select options={optionModal.product?.iceOptions?.map(s => ({ label: s, value: s }))} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="topping" label="Toppings">
+            <Checkbox.Group style={{ width: '100%' }}>
+              <Row>
+                {optionModal.product?.toppings?.map(t => (
+                  <Col span={8} key={t} style={{ marginBottom: 8 }}>
+                    <Checkbox value={t}>{t}</Checkbox>
+                  </Col>
+                ))}
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
           <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea placeholder="Ghi chú cho món này (nếu có)" />
+            <Input.TextArea placeholder="Ghi chú thêm cho món này..." />
           </Form.Item>
         </Form>
       </Modal>
     </div>
   );
-}
+};
+
 export default POSPage;
