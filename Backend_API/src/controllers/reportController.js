@@ -1,4 +1,5 @@
 const Order = require("../models/Order");
+const Ingredient = require("../models/Ingredient");
 
 function formatVNDate(date) {
   const vn = new Date(date.getTime() + 7 * 60 * 60 * 1000); // +7h
@@ -101,9 +102,43 @@ const getRevenueByDay = async (req, res) => {
   }
 };
 
+// 📈 5. Thống kê tổng hợp cho Dashboard
+const getDashboardStats = async (req, res) => {
+  try {
+    const now = new Date();
+    const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const startToday = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate(), 0, 0, 0);
+    startToday.setHours(startToday.getHours() - 7);
+
+    // Run parallel queries
+    const [totalRevenueData, todayOrders, pendingOrders, lowStockIngredients] = await Promise.all([
+      Order.find({ status: { $in: ["Hoàn thành", "Đã thanh toán"] } }),
+      Order.find({ createdAt: { $gte: startToday } }),
+      Order.find({ status: "Chờ xác nhận" }),
+      Ingredient.find({ $expr: { $lte: ["$quantity", "$minStock"] } })
+    ]);
+
+    const totalRevenue = totalRevenueData.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+    const todayRevenue = todayOrders
+      .filter(o => ["Hoàn thành", "Đã thanh toán"].includes(o.status))
+      .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+    res.json({
+      totalRevenue,
+      todayRevenue,
+      todayOrdersCount: todayOrders.length,
+      pendingOrdersCount: pendingOrders.length,
+      lowStockCount: lowStockIngredients.length
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getTotalRevenue,
   getTodayRevenue,
   getMonthRevenue,
   getRevenueByDay,
+  getDashboardStats,
 };

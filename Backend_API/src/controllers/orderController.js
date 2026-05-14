@@ -17,7 +17,10 @@ const createOrder = async (req, res) => {
         status: "Chờ xác nhận", // Khách chọn tiền mặt -> Đợi quán xác nhận rồi mới làm
         createdAt: Date.now(),
       });
-      console.log(`✅ Đơn tiền mặt đang đợi xác nhận: ${finalOrderID}`);
+      // Bắn tín hiệu socket.io
+      const io = req.app.get('io');
+      if (io) io.emit('new_order', newOrder);
+
       return res.status(201).json(newOrder);
     }
 
@@ -57,6 +60,10 @@ const createOrder = async (req, res) => {
         status: "Chờ thanh toán",
         createdAt: Date.now(),
       });
+
+      // Bắn tín hiệu socket.io (để admin biết có đơn đang đợi tiền)
+      const io = req.app.get('io');
+      if (io) io.emit('new_order', pendingOrder);
 
       return res.status(200).json({
         _id: pendingOrder._id,

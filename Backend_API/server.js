@@ -132,12 +132,34 @@ app.post('/api/ai/chat', async (req, res) => {
 
 // 9. KHỞI CHẠY SERVER
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+
+const io = new Server(server, {
+    cors: {
+        origin: ['http://localhost:3000', 'http://localhost:3001'],
+        credentials: true
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log('🔌 Một khách đã kết nối (ID: ' + socket.id + ')');
+    socket.on('disconnect', () => {
+        console.log('❌ Một khách đã ngưng kết nối');
+    });
+});
+
+// Lưu iO vào app để truy cập từ route/controller
+app.set('io', io);
+
+server.listen(PORT, () => {
     console.log(`
     ----------------------------------------------
     🚀 CaféSync Server is blazing fast at: http://localhost:${PORT}
     🎨 Images path: http://localhost:${PORT}/images
     🤖 Assistant: Syncie is Online
+    🔌 Socket.io: Enabled
     ----------------------------------------------
     `);
 });
@@ -159,14 +181,19 @@ app.get('/api/products/:id', async (req, res) => {
 // Endpoint nhận tín hiệu thanh toán thành công từ PayOS
 app.post("/api/payment/webhook", async (req, res) => {
     const { data, code } = req.body;
-    if (code === "00") { // Thanh toán thành công
+    if (code === "00") {
         try {
             const Order = require('./src/models/Order');
-            await Order.findOneAndUpdate(
+            const updatedOrder = await Order.findOneAndUpdate(
                 { orderID: `CFS${data.orderCode}` },
-                { status: "Chờ xác nhận" } // Đã trả tiền, giờ đợi quán gật đầu là làm món
+                { status: "Chờ xác nhận" },
+                { new: true }
             );
             console.log(`💰 Tiền đã về cho đơn CFS${data.orderCode}. Đang đợi nhân viên duyệt.`);
+            
+            if (updatedOrder) {
+                app.get('io').emit('new_order', updatedOrder);
+            }
         } catch (err) {
             console.error("Lỗi cập nhật Webhook:", err);
         }
